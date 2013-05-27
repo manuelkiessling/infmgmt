@@ -9,6 +9,8 @@ package domain
 
 import (
 	"errors"
+	"github.com/streadway/simpleuuid"
+	"time"
 )
 
 const (
@@ -17,13 +19,13 @@ const (
 )
 
 type MachineRepository interface {
-	Store(machine *Machine)
-	FindById(id int) *Machine
-	GetAll() []*Machine
+	Store(machine *Machine) error
+	FindById(id string) *Machine
+	GetAll() map[string]*Machine
 }
 
 type Machine struct {
-	Id			int
+	Id			string
 	DnsName	string
 	MachineType int
 	Vmhost *Machine
@@ -43,7 +45,11 @@ func NewMachine(name string, machineType int, vmhost *Machine) (newMachine *Mach
 			return nil, errors.New("Cannot attach physical machine to other machine")
 		}
 	}
-	machine := &Machine{1234, name, machineType, vmhost}
+	
+	uuid, _ := simpleuuid.NewTime(time.Now())
+	id := uuid.String()
+
+	machine := &Machine{id, name, machineType, vmhost}
 	return machine, nil
 }
 

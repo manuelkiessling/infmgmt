@@ -16,7 +16,7 @@ import (
 )
 
 type OverviewListEntry struct {
-	Id	int
+	Id	string
 	DnsName	string
 }
 
@@ -24,12 +24,12 @@ type MachineOverviewInteractor struct {
 	MachineRepository	domain.MachineRepository
 }
 
-func (interactor *MachineOverviewInteractor) List() ([]OverviewListEntry, error) {
-	var overviewListEntries []OverviewListEntry
+func (interactor *MachineOverviewInteractor) List() (map[string]*OverviewListEntry, error) {
+	var overviewListEntries map[string]*OverviewListEntry
   machines := interactor.MachineRepository.GetAll()
-	overviewListEntries = make([]OverviewListEntry, len(machines))
+	overviewListEntries = make(map[string] *OverviewListEntry, len(machines))
 	for i, machine := range machines {
-		overviewListEntries[i] = OverviewListEntry{machine.Id, machine.DnsName}
+		overviewListEntries[i] = &OverviewListEntry{machine.Id, machine.DnsName}
 	}
 	return overviewListEntries, nil
 }
