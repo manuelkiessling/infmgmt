@@ -10,21 +10,41 @@ package interfaces
 */
 
 import (
+	"fmt"
+	"github.com/coopernurse/gorp"
 	"github.com/ManuelKiessling/infmgmt-backend/domain"
 )
 
-type MachineRepository struct {
-	Entries map[string]*domain.Machine
+type Db interface {
+	
 }
 
-func NewMachineRepository() *MachineRepository {
-	machineRepository := new(MachineRepository)
-	machineRepository.Entries = make(map[string] *domain.Machine)
-	return machineRepository
+type MachineRepository struct {
+	dbMap *gorp.DbMap
+}
+
+func NewMachineRepository(dbMap *gorp.DbMap) *MachineRepository {
+	// SetKeys(false) means we have a primary key, but we set it ourselves (no autoincrement)
+	dbMap.AddTableWithName(domain.Machine{}, "machines").SetKeys(false, "Id")
+	dbMap.CreateTablesIfNotExists()
+	repo := new(MachineRepository)
+	repo.dbMap = dbMap
+	return repo
 }
 
 func (repo *MachineRepository) Store(machine *domain.Machine) error {
-	repo.Entries[machine.Id] = machine
-	return nil
+	return repo.dbMap.Insert(machine)
 }
 
+func (repo *MachineRepository) FindById(id string) (*domain.Machine, error) {
+	var machine *domain.Machine
+	var err error
+	obj, err := repo.dbMap.Get(domain.Machine{}, id)
+	if obj != nil {
+		machine = obj.(*domain.Machine)
+	} else {
+		machine = nil
+		err = fmt.Errorf("No machine with id %v in repository", id)
+	}
+	return machine, err
+}
