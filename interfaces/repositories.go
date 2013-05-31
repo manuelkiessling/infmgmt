@@ -12,6 +12,7 @@ package interfaces
 import (
 	"fmt"
 	"github.com/coopernurse/gorp"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/ManuelKiessling/infmgmt-backend/domain"
 )
 
@@ -45,12 +46,12 @@ func (repo *MachineRepository) FindById(id string) (*domain.Machine, error) {
 }
 
 func (repo *MachineRepository) GetAll() (map[string] *domain.Machine, error) {
-	var machinesArray []*domain.Machine
+	var results []*domain.Machine
 	machines := make(map[string] *domain.Machine)
-	query := "SELECT * FROM machines"
-	repo.dbMap.Select(&machinesArray, query)
-	for _, machine := range machinesArray {
-		machines[machine.Id] = machine
+	query := "SELECT * FROM machines ORDER BY Id"
+	repo.dbMap.Select(&results, query)
+	for _, result := range results {
+		machines[result.Id] = result
 	}
 	return machines, nil
 }

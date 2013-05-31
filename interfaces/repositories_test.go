@@ -2,8 +2,8 @@ package interfaces
 
 import (
 	"github.com/ManuelKiessling/infmgmt-backend/domain"
-	_ "log"
-	_ "os"
+	"log"
+	"os"
 	"testing"
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
@@ -14,13 +14,13 @@ import (
 func setupRepo() *MachineRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	//dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds)) 
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds)) 
 	repo := NewMachineRepository(dbMap)
 	return repo
 }
 
 func (repo *MachineRepository) reset() {
-	repo.dbMap.DropTables()
+	//repo.dbMap.DropTables()
 	repo.dbMap.CreateTables()
 }
 
