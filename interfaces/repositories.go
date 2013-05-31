@@ -43,3 +43,14 @@ func (repo *MachineRepository) FindById(id string) (*domain.Machine, error) {
 	}
 	return machine, err
 }
+
+func (repo *MachineRepository) GetAll() (map[string] *domain.Machine, error) {
+	var machinesArray []*domain.Machine
+	machines := make(map[string] *domain.Machine)
+	query := "SELECT * FROM machines"
+	repo.dbMap.Select(&machinesArray, query)
+	for _, machine := range machinesArray {
+		machines[machine.Id] = machine
+	}
+	return machines, nil
+}

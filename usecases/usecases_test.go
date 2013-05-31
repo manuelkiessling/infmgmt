@@ -12,15 +12,15 @@ func (repo *MockRepository) Store(machine *domain.Machine) error {
 	return nil
 }
 
-func (repo *MockRepository) FindById(id string) *domain.Machine {
-	return new(domain.Machine)
+func (repo *MockRepository) FindById(id string) (*domain.Machine, error) {
+	return new(domain.Machine), nil
 }
 
-func (repo *MockRepository) GetAll() map[string]*domain.Machine {
+func (repo *MockRepository) GetAll() (map[string]*domain.Machine, error) {
 	machines := make(map[string] *domain.Machine)
 	machines["101"] = &domain.Machine{"101", "Mocked machine #1", domain.P, nil}
 	machines["102"] = &domain.Machine{"102", "Mocked machine #2", domain.P, nil}
-	return machines
+	return machines, nil
 }
 
 

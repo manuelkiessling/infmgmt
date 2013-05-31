@@ -26,7 +26,7 @@ type MachineOverviewInteractor struct {
 
 func (interactor *MachineOverviewInteractor) List() (map[string]*OverviewListEntry, error) {
 	var overviewListEntries map[string]*OverviewListEntry
-  machines := interactor.MachineRepository.GetAll()
+  machines, nil := interactor.MachineRepository.GetAll()
 	overviewListEntries = make(map[string] *OverviewListEntry, len(machines))
 	for i, machine := range machines {
 		overviewListEntries[i] = &OverviewListEntry{machine.Id, machine.DnsName}

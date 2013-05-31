@@ -20,8 +20,8 @@ const (
 
 type MachineRepository interface {
 	Store(machine *Machine) error
-	FindById(id string) *Machine
-	GetAll() map[string]*Machine
+	FindById(id string) (*Machine, error)
+	GetAll() (map[string]*Machine, error)
 }
 
 type Machine struct {

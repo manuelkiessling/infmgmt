@@ -70,5 +70,9 @@ func TestMachineRepositoryGetAll(t *testing.T) {
 		machine, _ = domain.NewMachine(strconv.Itoa(i), domain.P, nil)
 		repo.Store(machine)
 	}
+	machines, _ := repo.GetAll()
+	if machines[machine.Id].DnsName != "9" {
+		t.Errorf("DnsName of retrieved machine %v (%+v) did not match DnsName of stored machine %+v", machine.Id, machines[machine.Id], machine)
+	}
 }
 
