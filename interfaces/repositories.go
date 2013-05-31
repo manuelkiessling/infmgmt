@@ -15,10 +15,6 @@ import (
 	"github.com/ManuelKiessling/infmgmt-backend/domain"
 )
 
-type Db interface {
-	
-}
-
 type MachineRepository struct {
 	dbMap *gorp.DbMap
 }
