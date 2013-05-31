@@ -26,7 +26,6 @@ type MachineRepository struct {
 func NewMachineRepository(dbMap *gorp.DbMap) *MachineRepository {
 	// SetKeys(false) means we have a primary key, but we set it ourselves (no autoincrement)
 	dbMap.AddTableWithName(domain.Machine{}, "machines").SetKeys(false, "Id")
-	dbMap.CreateTablesIfNotExists()
 	repo := new(MachineRepository)
 	repo.dbMap = dbMap
 	return repo
