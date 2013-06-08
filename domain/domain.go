@@ -24,14 +24,20 @@ type MachineRepository interface {
 	GetAll() (map[string]*Machine, error)
 }
 
+type MachineOperationsHandler interface {
+	Setup(machine *Machine) error
+	Reboot(machine *Machine) error
+}
+
 type Machine struct {
 	Id			string
 	DnsName	string
 	MachineType int
 	Vmhost *Machine
+	operationsHandler MachineOperationsHandler
 }
 
-func NewMachine(name string, machineType int, vmhost *Machine) (newMachine *Machine, err error) {
+func NewMachine(name string, machineType int, vmhost *Machine, operationsHandler MachineOperationsHandler) (newMachine *Machine, err error) {
 	if machineType == V {
 		if vmhost == nil {
 			return nil, errors.New("Must attach virtual machine to existing physical machine")
@@ -49,7 +55,16 @@ func NewMachine(name string, machineType int, vmhost *Machine) (newMachine *Mach
 	uuid, _ := simpleuuid.NewTime(time.Now())
 	id := uuid.String()
 
-	machine := &Machine{id, name, machineType, vmhost}
+	machine := &Machine{id, name, machineType, vmhost, operationsHandler}
 	return machine, nil
 }
 
+func (machine *Machine) Setup() error {
+	machine.operationsHandler.Setup(machine)
+	return nil
+}
+
+func (machine *Machine) Reboot() error {
+	machine.operationsHandler.Reboot(machine)
+	return nil
+}
