@@ -2,20 +2,23 @@ package domain
 
 import (
 	"testing"
+	"reflect"
 )
 
 type MockOperationsHandler struct {
-	SetupWasCalled bool
-	RebootWasCalled bool
+	NumberOfCalls int
+	Calls map[string]int
 }
 
-func (oh *MockOperationsHandler) Setup(machine *Machine) error {
-	oh.SetupWasCalled = true
+func (oh *MockOperationsHandler) CopyBaseImage(kvmHostDnsName string, newImageName string) error {
+	oh.Calls["CopyBaseImage"] = oh.NumberOfCalls
+	oh.NumberOfCalls++
 	return nil
 }
 
-func (oh *MockOperationsHandler) Reboot(machine *Machine) error {
-	oh.RebootWasCalled = true
+func (oh *MockOperationsHandler) SetIpAddressInImage(kvmHostDnsName string, ipAddress string) error {
+	oh.Calls["SetIpAddressInImage"] = oh.NumberOfCalls
+	oh.NumberOfCalls++
 	return nil
 }
 
@@ -48,21 +51,15 @@ func TestAddVirtualMachine(t *testing.T) {
 }
 
 func TestSetupVirtualMachine(t *testing.T) {
+	expectedCalls := make(map[string]int)
+	expectedCalls["CopyBaseImage"] = 0
+	expectedCalls["SetIpAddressInImage"] = 1
 	oh := new(MockOperationsHandler)
+	oh.Calls = make(map[string]int)
 	pm, _ := NewMachine("kvmhost3", P, nil, oh)
 	vm1, _ := NewMachine("vm1", V, pm, oh)
 	vm1.Setup()
-	if !oh.SetupWasCalled {
-		t.Errorf("Setup() of machines's OperationsHandler was not called.")
-	}
-}
-
-func TestRebootVirtualMachine(t *testing.T) {
-	oh := new(MockOperationsHandler)
-	pm, _ := NewMachine("kvmhost3", P, nil, oh)
-	vm1, _ := NewMachine("vm1", V, pm, oh)
-	vm1.Reboot()
-	if !oh.RebootWasCalled {
-		t.Errorf("Reboot() of machines's OperationsHandler was not called.")
+	if !reflect.DeepEqual(expectedCalls, oh.Calls) {
+		t.Errorf("Setup() did not execute OperationsHandle commands in the right order, calls were: %+v", oh.Calls)
 	}
 }

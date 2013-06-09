@@ -25,8 +25,8 @@ type MachineRepository interface {
 }
 
 type MachineOperationsHandler interface {
-	Setup(machine *Machine) error
-	Reboot(machine *Machine) error
+	CopyBaseImage(vmhostDnsName string, newImageName string) error
+	SetIpAddressInImage(vmhostDnsName string, ipAddress string) error
 }
 
 type Machine struct {
@@ -60,11 +60,11 @@ func NewMachine(name string, machineType int, vmhost *Machine, operationsHandler
 }
 
 func (machine *Machine) Setup() error {
-	machine.operationsHandler.Setup(machine)
+	machine.operationsHandler.CopyBaseImage(machine.Vmhost.DnsName, machine.DnsName)
+	machine.operationsHandler.SetIpAddressInImage(machine.Vmhost.DnsName, "127.0.0.1")
 	return nil
 }
 
 func (machine *Machine) Reboot() error {
-	machine.operationsHandler.Reboot(machine)
 	return nil
 }
