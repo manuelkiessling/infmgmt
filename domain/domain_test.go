@@ -10,14 +10,20 @@ type MockOperationsHandler struct {
 	Calls         map[string]int
 }
 
-func (oh *MockOperationsHandler) CopyBaseImage(kvmHostDnsName string, newImageName string) error {
-	oh.Calls["CopyBaseImage"] = oh.NumberOfCalls
+func (oh *MockOperationsHandler) CreateGuestImageFromBaseImage(vmhostDnsName string, newImageName string) error {
+	oh.Calls["CreateGuestImageFromBaseImage"] = oh.NumberOfCalls
 	oh.NumberOfCalls++
 	return nil
 }
 
-func (oh *MockOperationsHandler) SetIpAddressInImage(kvmHostDnsName string, ipAddress string) error {
-	oh.Calls["SetIpAddressInImage"] = oh.NumberOfCalls
+func (oh *MockOperationsHandler) SetIpAddressInGuestimage(vmhostDnsName string, vmguestName string, ipAddress string) error {
+	oh.Calls["SetIpAddressInGuestimage"] = oh.NumberOfCalls
+	oh.NumberOfCalls++
+	return nil
+}
+
+func (oh *MockOperationsHandler) SetHostnameInGuestimage(vmhostDnsName string, vmguestName string, hostname string) error {
+	oh.Calls["SetHostnameInGuestimage"] = oh.NumberOfCalls
 	oh.NumberOfCalls++
 	return nil
 }
@@ -52,8 +58,9 @@ func TestAddVirtualMachine(t *testing.T) {
 
 func TestSetupVirtualMachine(t *testing.T) {
 	expectedCalls := make(map[string]int)
-	expectedCalls["CopyBaseImage"] = 0
-	expectedCalls["SetIpAddressInImage"] = 1
+	expectedCalls["CreateGuestImageFromBaseImage"] = 0
+	expectedCalls["SetIpAddressInGuestimage"] = 1
+	expectedCalls["SetHostnameInGuestimage"] = 2
 	oh := new(MockOperationsHandler)
 	oh.Calls = make(map[string]int)
 	pm, _ := NewMachine("kvmhost3", P, nil, oh)

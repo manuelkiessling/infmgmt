@@ -25,8 +25,9 @@ type MachineRepository interface {
 }
 
 type MachineOperationsHandler interface {
-	CopyBaseImage(vmhostDnsName string, newImageName string) error
-	SetIpAddressInImage(vmhostDnsName string, ipAddress string) error
+	CreateGuestImageFromBaseImage(vmhostDnsName string, newImageName string) error
+	SetIpAddressInGuestimage(vmhostDnsName string, vmguestName string, ipAddress string) error
+	SetHostnameInGuestimage(vmhostDnsName string, vmguestName string, hostname string) error
 }
 
 type Machine struct {
@@ -60,8 +61,9 @@ func NewMachine(name string, machineType int, vmhost *Machine, operationsHandler
 }
 
 func (machine *Machine) Setup() error {
-	machine.operationsHandler.CopyBaseImage(machine.Vmhost.DnsName, machine.DnsName)
-	machine.operationsHandler.SetIpAddressInImage(machine.Vmhost.DnsName, "127.0.0.1")
+	machine.operationsHandler.CreateGuestImageFromBaseImage(machine.Vmhost.DnsName, machine.DnsName)
+	machine.operationsHandler.SetIpAddressInGuestimage(machine.Vmhost.DnsName, machine.DnsName, "127.0.0.1")
+	machine.operationsHandler.SetHostnameInGuestimage(machine.Vmhost.DnsName, machine.DnsName, machine.DnsName)
 	return nil
 }
 
