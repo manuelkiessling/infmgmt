@@ -30,10 +30,10 @@ type MachineOperationsHandler interface {
 }
 
 type Machine struct {
-	Id			string
-	DnsName	string
-	MachineType int
-	Vmhost *Machine
+	Id                string
+	DnsName           string
+	MachineType       int
+	Vmhost            *Machine
 	operationsHandler MachineOperationsHandler
 }
 
@@ -51,7 +51,7 @@ func NewMachine(name string, machineType int, vmhost *Machine, operationsHandler
 			return nil, errors.New("Cannot attach physical machine to other machine")
 		}
 	}
-	
+
 	uuid, _ := simpleuuid.NewTime(time.Now())
 	id := uuid.String()
 

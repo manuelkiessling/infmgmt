@@ -1,13 +1,13 @@
 package domain
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 type MockOperationsHandler struct {
 	NumberOfCalls int
-	Calls map[string]int
+	Calls         map[string]int
 }
 
 func (oh *MockOperationsHandler) CopyBaseImage(kvmHostDnsName string, newImageName string) error {
