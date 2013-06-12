@@ -1,27 +1,30 @@
 package interfaces
 
 import (
-	"github.com/ManuelKiessling/infmgmt-backend/usecases"
-	"fmt"
-	"database/sql"
-	"github.com/coopernurse/gorp"
-	"net/http"
-	"log"
-	"os"
 	"encoding/json"
+	"fmt"
+	"github.com/ManuelKiessling/infmgmt-backend/domain"
+	"net/http"
 )
 
-func MachinesRequesthandler(w http.ResponseWriter, r *http.Request) {
-	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
-	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds)) 
+type RequestHandler struct {
+	machineRepository        domain.MachineRepository
+	machineOperationsHandler domain.MachineOperationsHandler
+}
 
-	repo := NewMachineRepository(dbMap)
+func NewRequestHandler(machineRepository domain.MachineRepository, machineOperationsHandler domain.MachineOperationsHandler) *RequestHandler {
+	requestHandler := new(RequestHandler)
+	requestHandler.machineRepository = machineRepository
+	requestHandler.machineOperationsHandler = machineOperationsHandler
+	return requestHandler
+}
 
-	interactor := new(usecases.MachineOverviewInteractor)
-	interactor.MachineRepository = repo
+func (rh *RequestHandler) HandleMachinesRequest(w http.ResponseWriter, r *http.Request) {
+	interactor := new(domain.MachinesInteractor)
+	interactor.MachineRepository = rh.machineRepository
+	interactor.MachineOperationsHandler = rh.machineOperationsHandler
 
-	allMachines, _ := interactor.List()
+	allMachines, _ := interactor.ShowOverviewList()
 
 	jsonResponse, _ := json.Marshal(allMachines)
 
@@ -29,3 +32,8 @@ func MachinesRequesthandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", jsonResponse)
 }
 
+func (rh *RequestHandler) HandleMachineSetupRequest(w http.ResponseWriter, r *http.Request) {
+	interactor := new(domain.MachinesInteractor)
+	interactor.MachineRepository = rh.machineRepository
+	interactor.MachineOperationsHandler = rh.machineOperationsHandler
+}

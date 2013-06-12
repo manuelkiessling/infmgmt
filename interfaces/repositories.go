@@ -1,4 +1,5 @@
 package interfaces
+
 /*
 
 - hier ist der befehlszeilen-zusammenbauer implementiert, der vom usecases layer benutzt wird um zB eine VM zu installieren
@@ -11,9 +12,9 @@ package interfaces
 
 import (
 	"fmt"
+	"github.com/ManuelKiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/ManuelKiessling/infmgmt-backend/domain"
 )
 
 type MachineRepository struct {
@@ -45,9 +46,9 @@ func (repo *MachineRepository) FindById(id string) (*domain.Machine, error) {
 	return machine, err
 }
 
-func (repo *MachineRepository) GetAll() (map[string] *domain.Machine, error) {
+func (repo *MachineRepository) GetAll() (map[string]*domain.Machine, error) {
 	var results []*domain.Machine
-	machines := make(map[string] *domain.Machine)
+	machines := make(map[string]*domain.Machine)
 	query := "SELECT * FROM machines ORDER BY Id"
 	repo.dbMap.Select(&results, query)
 	for _, result := range results {

@@ -1,7 +1,6 @@
 package interfaces
 
-import (
-)
+import ()
 
 type CommandExecutor interface {
 	Run(commandline string) (output string, err error)
@@ -18,5 +17,6 @@ func NewDefaultMachineOperationsHandler(commandExecutor CommandExecutor) *Defaul
 }
 
 func (oh *DefaultMachineOperationsHandler) CreateGuestImageFromBaseImage(vmhostDnsName string, newImageName string) error {
-	return nil	
+	oh.commandExecutor.Run("ssh root@" + vmhostDnsName + " cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/" + newImageName + ".raw")
+	return nil
 }
