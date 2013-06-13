@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ManuelKiessling/infmgmt-backend/domain"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -36,4 +37,7 @@ func (rh *RequestHandler) HandleMachineSetupRequest(w http.ResponseWriter, r *ht
 	interactor := new(domain.MachinesInteractor)
 	interactor.MachineRepository = rh.machineRepository
 	interactor.MachineOperationsHandler = rh.machineOperationsHandler
+	machineId := mux.Vars(r)["machineId"]
+	interactor.SetupMachine(machineId)
+//	fmt.Fprintf(w, "%+v", mux.Vars(r))
 }

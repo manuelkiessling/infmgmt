@@ -47,7 +47,11 @@ func (interactor *MachinesInteractor) ShowOverviewList() (map[string]*MachineOve
 }
 
 func (interactor *MachinesInteractor) SetupMachine(machineId string) (output string, err error) {
-	machine, nil := interactor.MachineRepository.FindById(machineId)
-	interactor.MachineOperationsHandler.CreateGuestImageFromBaseImage(machine.Vmhost.DnsName, machine.DnsName)
+	machine, err := interactor.MachineRepository.FindById(machineId)
+	if err == nil {
+		interactor.MachineOperationsHandler.CreateGuestImageFromBaseImage(machine.Vmhost.DnsName, machine.DnsName)
+	} else {
+		return "", err
+	}
 	return "", nil
 }
