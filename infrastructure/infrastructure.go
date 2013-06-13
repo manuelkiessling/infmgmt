@@ -17,6 +17,6 @@ func (ce *DefaultCommandExecutor) Run(commandline string) (output string, err er
 	cmd := exec.Command(commandline)
 	outputBytes, err := cmd.Output()
 	output = fmt.Sprintf("%s", outputBytes)
-	//fmt.Printf("%s", output)
+	fmt.Printf("%s", output)
 	return output, err
 }

@@ -11,7 +11,7 @@ package domain
 */
 
 import (
-	_ "fmt"
+	"fmt"
 )
 
 type MachineRepository interface {
@@ -48,6 +48,7 @@ func (interactor *MachinesInteractor) ShowOverviewList() (map[string]*MachineOve
 
 func (interactor *MachinesInteractor) SetupMachine(machineId string) (output string, err error) {
 	machine, err := interactor.MachineRepository.FindById(machineId)
+	fmt.Printf("Usecase found for id %v the machine %+v, or error %v", machineId, machine, err)
 	if err == nil {
 		interactor.MachineOperationsHandler.CreateGuestImageFromBaseImage(machine.Vmhost.DnsName, machine.DnsName)
 	} else {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/ManuelKiessling/infmgmt-backend/infrastructure"
 	"github.com/ManuelKiessling/infmgmt-backend/interfaces"
+	"github.com/ManuelKiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
 	"log"
@@ -18,9 +19,13 @@ func main() {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	repo := interfaces.NewMachineRepository(dbMap)
+	mr := interfaces.NewMachineRepository(dbMap)
 
-	rh := interfaces.NewRequestHandler(repo, oh)
+	mi := new(domain.MachinesInteractor)
+	mi.MachineRepository = mr
+	mi.MachineOperationsHandler = oh
+
+	rh := interfaces.NewRequestHandler(mi)
 	r := mux.NewRouter()
 
 	r.HandleFunc("/machines", func(res http.ResponseWriter, req *http.Request) {

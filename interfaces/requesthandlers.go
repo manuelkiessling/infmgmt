@@ -9,35 +9,26 @@ import (
 )
 
 type RequestHandler struct {
-	machineRepository        domain.MachineRepository
-	machineOperationsHandler domain.MachineOperationsHandler
+	machinesInteractor *domain.MachinesInteractor
 }
 
-func NewRequestHandler(machineRepository domain.MachineRepository, machineOperationsHandler domain.MachineOperationsHandler) *RequestHandler {
+func NewRequestHandler(machinesInteractor *domain.MachinesInteractor) *RequestHandler {
 	requestHandler := new(RequestHandler)
-	requestHandler.machineRepository = machineRepository
-	requestHandler.machineOperationsHandler = machineOperationsHandler
+	requestHandler.machinesInteractor = machinesInteractor
 	return requestHandler
 }
 
-func (rh *RequestHandler) HandleMachinesRequest(w http.ResponseWriter, r *http.Request) {
-	interactor := new(domain.MachinesInteractor)
-	interactor.MachineRepository = rh.machineRepository
-	interactor.MachineOperationsHandler = rh.machineOperationsHandler
-
-	allMachines, _ := interactor.ShowOverviewList()
+func (rh *RequestHandler) HandleMachinesRequest(res http.ResponseWriter, req *http.Request) {
+	allMachines, _ := rh.machinesInteractor.ShowOverviewList()
 
 	jsonResponse, _ := json.Marshal(allMachines)
 
-	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, "%s", jsonResponse)
+	res.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(res, "%s", jsonResponse)
 }
 
-func (rh *RequestHandler) HandleMachineSetupRequest(w http.ResponseWriter, r *http.Request) {
-	interactor := new(domain.MachinesInteractor)
-	interactor.MachineRepository = rh.machineRepository
-	interactor.MachineOperationsHandler = rh.machineOperationsHandler
-	machineId := mux.Vars(r)["machineId"]
-	interactor.SetupMachine(machineId)
-//	fmt.Fprintf(w, "%+v", mux.Vars(r))
+func (rh *RequestHandler) HandleMachineSetupRequest(res http.ResponseWriter, req *http.Request) {
+	machineId := mux.Vars(req)["machineId"]
+	rh.machinesInteractor.SetupMachine(machineId)
+	//	fmt.Fprintf(res, "%+v", mux.Vars(req))
 }
