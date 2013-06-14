@@ -21,24 +21,39 @@ type MachineRepository struct {
 	dbMap *gorp.DbMap
 }
 
+type machineModel struct {
+	Id          string
+	DnsName     string
+	MachineType int
+	VmhostId    string
+}
+
 func NewMachineRepository(dbMap *gorp.DbMap) *MachineRepository {
 	// SetKeys(false) means we do have a primary key ("Id"), but we set it ourselves (no autoincrement)
-	dbMap.AddTableWithName(domain.Machine{}, "machines").SetKeys(false, "Id")
+	dbMap.AddTableWithName(machineModel{}, "machines").SetKeys(false, "Id")
 	repo := new(MachineRepository)
 	repo.dbMap = dbMap
 	return repo
 }
 
 func (repo *MachineRepository) Store(machine *domain.Machine) error {
-	return repo.dbMap.Insert(machine)
+	var mm *machineModel
+	if machine.Vmhost == nil {
+		mm = &machineModel{Id: machine.Id, DnsName: machine.DnsName, MachineType: machine.MachineType, VmhostId: ""}
+	} else {
+		repo.Store(machine.Vmhost)
+		mm = &machineModel{Id: machine.Id, DnsName: machine.DnsName, MachineType: machine.MachineType, VmhostId: machine.Vmhost.Id}
+	}
+	return repo.dbMap.Insert(mm)
 }
 
 func (repo *MachineRepository) FindById(id string) (*domain.Machine, error) {
 	var machine *domain.Machine
 	var err error
-	obj, err := repo.dbMap.Get(domain.Machine{}, id)
+	obj, err := repo.dbMap.Get(machineModel{}, id)
 	if obj != nil {
-		machine = obj.(*domain.Machine)
+		mm := obj.(*machineModel)
+		machine = repo.getMachineFromMachineModel(mm)
 	} else {
 		machine = nil
 		err = fmt.Errorf("No machine with id %v in repository", id)
@@ -47,12 +62,22 @@ func (repo *MachineRepository) FindById(id string) (*domain.Machine, error) {
 }
 
 func (repo *MachineRepository) GetAll() (map[string]*domain.Machine, error) {
-	var results []*domain.Machine
+	var results []*machineModel
 	machines := make(map[string]*domain.Machine)
 	query := "SELECT * FROM machines ORDER BY Id"
 	repo.dbMap.Select(&results, query)
 	for _, result := range results {
-		machines[result.Id] = result
+		machines[result.Id] = repo.getMachineFromMachineModel(result)
 	}
 	return machines, nil
+}
+
+func (repo *MachineRepository) getMachineFromMachineModel(mm *machineModel) *domain.Machine {
+	var vmhost *domain.Machine
+	if mm.VmhostId == "" {
+		vmhost = nil
+	} else {
+		vmhost, _ = repo.FindById(mm.VmhostId)
+	}
+	return &domain.Machine{Id: mm.Id, DnsName: mm.DnsName, MachineType: mm.MachineType, Vmhost: vmhost}
 }

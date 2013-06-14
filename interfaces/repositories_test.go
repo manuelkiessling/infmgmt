@@ -5,8 +5,8 @@ import (
 	"github.com/ManuelKiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
 	_ "github.com/mattn/go-sqlite3"
-	"log"
-	"os"
+	_ "log"
+	_ "os"
 	"strconv"
 	"testing"
 )
@@ -14,7 +14,7 @@ import (
 func setupRepo() *MachineRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	//dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	repo := NewMachineRepository(dbMap)
 	return repo
 }
@@ -58,6 +58,19 @@ func TestMachineRepositoryFindById(t *testing.T) {
 	if retrievedMachine.DnsName != dnsName {
 		t.Errorf("Repo %+v did not return the correct machine: %+v", newRepo, retrievedMachine)
 	}
+}
+
+func TestCantStoreMachineIfItsVmhostIsntStored(t *testing.T) {
+	vmhost, _ := domain.NewMachine("vmhost", domain.P, nil)
+	machine, _ := domain.NewMachine("original", domain.V, vmhost)
+	repo := setupRepo()
+	repo.reset()
+	defer repo.reset()
+	err := repo.Store(machine)
+	if (err == nil) {
+		t.Errorf("Should have failed because we didn't store the Vmhost first")
+	}
+	t.Errorf("%+v", err)
 }
 
 func TestMachineRepositoryGetAll(t *testing.T) {

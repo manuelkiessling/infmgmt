@@ -14,7 +14,8 @@ func (ce *MockCommandExecutor) Run(commandline string) (output string, err error
 }
 
 func TestCreateGuestImageFromBaseImage(t *testing.T) {
-	expected := "ssh root@kvmhost cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/newimage.raw"
+	//expected := "ssh root@kvmhost cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/newimage.raw"
+	expected := "/usr/bin/touch /tmp/testfile-kvmhost-newimage"
 	commandExecutor := new(MockCommandExecutor)
 	oh := NewDefaultMachineOperationsHandler(commandExecutor)
 	oh.CreateGuestImageFromBaseImage("kvmhost", "newimage")
