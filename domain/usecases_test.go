@@ -37,10 +37,10 @@ func (repo *MockRepository) Store(machine *Machine) error {
 
 func (repo *MockRepository) FindById(id string) (*Machine, error) {
 	var machine *Machine
-	if (id == "1") { // asked for PM
+	if id == "1" { // asked for PM
 		machine = &Machine{"1", "Machine 1", P, nil}
 	}
-	if (id == "2") { // a VM with a PM
+	if id == "2" { // a VM with a PM
 		vmhost := &Machine{"1", "Machine 1", P, nil}
 		machine = &Machine{"2", "Machine 2", V, vmhost}
 	}
@@ -48,17 +48,17 @@ func (repo *MockRepository) FindById(id string) (*Machine, error) {
 }
 
 func (repo *MockRepository) GetAll() (map[string]*Machine, error) {
-	machines := make(map[string] *Machine)
+	machines := make(map[string]*Machine)
 	machines["1"] = &Machine{"1", "Machine 1", P, nil}
 	machines["2"] = &Machine{"2", "Machine 2", V, machines["1"]}
 	return machines, nil
 }
 
-func TestSetupMachine(t *testing.T) {
+func TestSetupMachineTriggersTheRightActions(t *testing.T) {
 	expectedCalls := make(map[string]int)
 	expectedCalls["CreateGuestImageFromBaseImage"] = 0
-//	expectedCalls["SetIpAddressInGuestimage"] = 1
-//	expectedCalls["SetHostnameInGuestimage"] = 2
+	//expectedCalls["SetIpAddressInGuestimage"] = 1
+	//expectedCalls["SetHostnameInGuestimage"] = 2
 	oh := new(MockOperationsHandler)
 	oh.Calls = make(map[string]int)
 	interactor := new(MachinesInteractor)
@@ -70,6 +70,10 @@ func TestSetupMachine(t *testing.T) {
 	}
 }
 
+func TestSetupMachineSetsTheCorrectMachineState(t *testing.T) {
+
+}
+
 func TestSetupMachineFailsIfMachineIsNotVirtual(t *testing.T) {
 	oh := new(MockOperationsHandler)
 	oh.Calls = make(map[string]int)
@@ -78,7 +82,7 @@ func TestSetupMachineFailsIfMachineIsNotVirtual(t *testing.T) {
 	interactor.MachineOperationsHandler = oh
 	interactor.MachineRepository = new(MockRepository)
 	_, err := interactor.SetupMachine("1")
-	if (err == nil) {
-		t.Errorf("Setting up a non-virtual machine should trigger an error, but it didn't")	
+	if err == nil {
+		t.Errorf("Setting up a non-virtual machine should trigger an error, but it didn't")
 	}
 }
