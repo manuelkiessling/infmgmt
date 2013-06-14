@@ -5,7 +5,7 @@ import (
 )
 
 type CommandExecutor interface {
-	Run(command string, argument string) (output string, err error)
+	Run(command string, arguments ...string) (output string, err error)
 }
 
 type DefaultMachineOperationsHandler struct {

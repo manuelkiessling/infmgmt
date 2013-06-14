@@ -30,5 +30,4 @@ func (rh *RequestHandler) HandleMachinesRequest(res http.ResponseWriter, req *ht
 func (rh *RequestHandler) HandleMachineSetupRequest(res http.ResponseWriter, req *http.Request) {
 	machineId := mux.Vars(req)["machineId"]
 	rh.machinesInteractor.SetupMachine(machineId)
-	//	fmt.Fprintf(res, "%+v", mux.Vars(req))
 }
