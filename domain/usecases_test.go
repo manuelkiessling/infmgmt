@@ -36,15 +36,21 @@ func (repo *MockRepository) Store(machine *Machine) error {
 }
 
 func (repo *MockRepository) FindById(id string) (*Machine, error) {
-	vmhost, _ := NewMachine("Vmhost 12345", P, nil)
-	machine, _ := NewMachine("Machine " + id, V, vmhost)
+	var machine *Machine
+	if (id == "1") { // asked for PM
+		machine = &Machine{"1", "Machine 1", P, nil}
+	}
+	if (id == "2") { // a VM with a PM
+		vmhost := &Machine{"1", "Machine 1", P, nil}
+		machine = &Machine{"2", "Machine 2", V, vmhost}
+	}
 	return machine, nil
 }
 
 func (repo *MockRepository) GetAll() (map[string]*Machine, error) {
 	machines := make(map[string] *Machine)
-	machines["101"] = &Machine{"101", "Mocked machine #1", P, nil}
-	machines["102"] = &Machine{"102", "Mocked machine #2", P, nil}
+	machines["1"] = &Machine{"1", "Machine 1", P, nil}
+	machines["2"] = &Machine{"2", "Machine 2", V, machines["1"]}
 	return machines, nil
 }
 
@@ -58,9 +64,21 @@ func TestSetupMachine(t *testing.T) {
 	interactor := new(MachinesInteractor)
 	interactor.MachineOperationsHandler = oh
 	interactor.MachineRepository = new(MockRepository)
-	interactor.SetupMachine("111")
+	interactor.SetupMachine("2")
 	if !reflect.DeepEqual(expectedCalls, oh.Calls) {
-		t.Errorf("Setup() did not execute OperationsHandle commands in the right order, calls were: %+v", oh.Calls)
+		t.Errorf("Setup() did not execute OperationsHandler commands in the right order, calls were: %+v", oh.Calls)
 	}
 }
 
+func TestSetupMachineFailsIfMachineIsNotVirtual(t *testing.T) {
+	oh := new(MockOperationsHandler)
+	oh.Calls = make(map[string]int)
+
+	interactor := new(MachinesInteractor)
+	interactor.MachineOperationsHandler = oh
+	interactor.MachineRepository = new(MockRepository)
+	_, err := interactor.SetupMachine("1")
+	if (err == nil) {
+		t.Errorf("Setting up a non-virtual machine should trigger an error, but it didn't")	
+	}
+}

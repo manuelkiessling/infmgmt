@@ -12,6 +12,7 @@ package domain
 
 import (
 	_ "fmt"
+	"errors"
 )
 
 type MachineRepository interface {
@@ -49,6 +50,9 @@ func (interactor *MachinesInteractor) ShowOverviewList() (map[string]*MachineOve
 func (interactor *MachinesInteractor) SetupMachine(machineId string) (output string, err error) {
 	machine, err := interactor.MachineRepository.FindById(machineId)
 	if err == nil {
+		if (machine.MachineType != V) {
+			return "", errors.New("Can't setup a non-virtual machine")
+		}
 		interactor.MachineOperationsHandler.CreateGuestImageFromBaseImage(machine.Vmhost.DnsName, machine.DnsName)
 	} else {
 		return "", err

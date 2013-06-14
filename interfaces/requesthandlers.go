@@ -29,5 +29,10 @@ func (rh *RequestHandler) HandleMachinesRequest(res http.ResponseWriter, req *ht
 
 func (rh *RequestHandler) HandleMachineSetupRequest(res http.ResponseWriter, req *http.Request) {
 	machineId := mux.Vars(req)["machineId"]
-	rh.machinesInteractor.SetupMachine(machineId)
+	_, err := rh.machinesInteractor.SetupMachine(machineId)
+	if (err != nil) {
+		http.Error(res, "Can't setup a non-virtual machine", 500)
+	} else {
+		fmt.Fprintf(res, "OK")
+	}
 }
