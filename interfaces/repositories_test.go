@@ -60,17 +60,17 @@ func TestMachineRepositoryFindById(t *testing.T) {
 	}
 }
 
-func TestCantStoreMachineIfItsVmhostIsntStored(t *testing.T) {
-	vmhost, _ := domain.NewMachine("vmhost", domain.P, nil)
-	machine, _ := domain.NewMachine("original", domain.V, vmhost)
+func TestStoringVirtualMachineAlsoStoresItsVmhost(t *testing.T) {
+	vmhost, _ := domain.NewMachine("vmhoststoretest", domain.P, nil)
+	machine, _ := domain.NewMachine("originalstoretest", domain.V, vmhost)
 	repo := setupRepo()
 	repo.reset()
 	defer repo.reset()
-	err := repo.Store(machine)
-	if (err == nil) {
-		t.Errorf("Should have failed because we didn't store the Vmhost first")
+	repo.Store(machine)
+	vmhost, _ = repo.FindById(vmhost.Id)
+	if (vmhost == nil) {
+		t.Errorf("Should have stored the Vmhost, but didn't")
 	}
-	t.Errorf("%+v", err)
 }
 
 func TestMachineRepositoryGetAll(t *testing.T) {
