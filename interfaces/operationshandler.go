@@ -11,31 +11,36 @@ type CommandExecutor interface {
 }
 
 type Command struct {
-	Name string
+	Name      string
 	Arguments []string
 }
 
 type Procedure struct {
-	Id string
-	Status int
+	Id              string
+	Status          int
 	commandExecutor CommandExecutor
-	commands []*Command
+	commands        []*Command
 }
 
 func (p *Procedure) Add(command *Command) {
 	p.commands = append(p.commands, command)
 }
 
-func (p *Procedure) Start() {
-	for _, command := range p.commands {
-		p.commandExecutor.Run(command.Name, command.Arguments...)
-	}
-	p.Status = 1
+func (p *Procedure) Start() chan int {
+	c := make(chan int)
+	go func() {
+		for _, command := range p.commands {
+			p.commandExecutor.Run(command.Name, command.Arguments...)
+		}
+		p.Status = 1
+		c <- 1
+	}()
+	return c
 }
 
 type DefaultMachineOperationsHandler struct {
 	commandExecutor CommandExecutor
-	procedures map[string]*Procedure
+	procedures      map[string]*Procedure
 }
 
 func NewDefaultMachineOperationsHandler(commandExecutor CommandExecutor) *DefaultMachineOperationsHandler {
@@ -57,7 +62,7 @@ func (oh *DefaultMachineOperationsHandler) NewProcedure() *Procedure {
 func (oh *DefaultMachineOperationsHandler) CommandCreateVirtualMachine(vmhostDnsName string, machineName string) (*Command, error) {
 	command := new(Command)
 	command.Name = "/usr/bin/touch"
-	command.Arguments = append(command.Arguments, "/tmp/testfile-" + vmhostDnsName + "-" + machineName)
+	command.Arguments = append(command.Arguments, "/tmp/testfile-"+vmhostDnsName+"-"+machineName)
 	//("ssh root@" + vmhostDnsName + " cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/" + newImageName + ".raw")
 	return command, nil
 }

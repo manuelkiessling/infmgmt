@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	_ "fmt"
 	"testing"
 )
 
@@ -24,10 +25,14 @@ func TestCreateGuestImageFromBaseImage(t *testing.T) {
 	p := oh.NewProcedure()
 	command, _ := oh.CommandCreateVirtualMachine("kvmhost1", "virtual1")
 	p.Add(command)
-	p.Start()
-	for p.Status == 0 {}
+	c := p.Start()
+	status := 0
+	for status == 0 {
+		<-c
+		status = p.Status
+	}
 	if commandExecutor.Commandlines[0] != expected {
-		t.Errorf("OperationsHandler created commandline %+v, expected %+v", commandExecutor.Commandlines[0], expected)
+		t.Errorf("OperationsHandler created commandline %+v, expected %+v", commandExecutor.Commandlines, expected)
 	}
 }
 
