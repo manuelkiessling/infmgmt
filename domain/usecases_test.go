@@ -5,44 +5,26 @@ import (
 	"testing"
 )
 
-type MockCommand struct {
-	Command
-	TheCommand string
-}
-
-type MockProcedure struct {
-	Id                string
-	Status            int
-	OperationsHandler *MockOperationsHandler
-	Started           bool
-}
-
-func (p *MockProcedure) Add(command Command) {
-	p.OperationsHandler.Commands = append(p.OperationsHandler.Commands, command.TheCommand)
-}
-
-func (p *MockProcedure) Start() chan int {
-	c := make(chan int)
-	p.Status = 1
-	p.Started = true
-	c <- 1
-	return c
-}
-
 type MockOperationsHandler struct {
 	Commands []string
 }
 
-func (oh *MockOperationsHandler) NewProcedure() Procedure {
-	p := new(MockProcedure)
-	p.OperationsHandler = oh
-	return p
+func (oh *MockOperationsHandler) InitializeProcedure() string {
+	return "123"
 }
 
-func (oh *MockOperationsHandler) CommandCreateVirtualMachine(vmhostDnsName string, machineName string) (Command, error) {
-	command := new(MockCommand)
-	command.TheCommand = "CommandCreateVirtualMachine " + vmhostDnsName + " " + machineName
-	return command, nil
+func (oh *MockOperationsHandler) AddCommandCreateVirtualMachine(procedureId string, vmhostDnsName string, machineName string) error {
+	oh.Commands = append(oh.Commands, "CreateVirtualMachine " + vmhostDnsName + " " + machineName)
+	return nil
+}
+
+func (oh *MockOperationsHandler) ExecuteProcedure(procedureId string) chan int {
+	c := make(chan int)
+	return c
+}
+
+func (oh *MockOperationsHandler) GetProcedureStatus(procedureId string) int {
+	return 1
 }
 
 type MockRepository struct {
@@ -73,7 +55,7 @@ func (repo *MockRepository) GetAll() (map[string]*Machine, error) {
 
 func TestSetupMachineTriggersTheRightActions(t *testing.T) {
 	expectedCommands := make([]string, 1)
-	expectedCommands = append(expectedCommands, "CreateVirtualMachine Machine 1 Machine 2")
+	expectedCommands[0] = "CreateVirtualMachine Machine 1 Machine 2"
 
 	oh := new(MockOperationsHandler)
 
@@ -82,7 +64,7 @@ func TestSetupMachineTriggersTheRightActions(t *testing.T) {
 	interactor.MachineRepository = new(MockRepository)
 	interactor.SetupMachine("2")
 	if !reflect.DeepEqual(expectedCommands, oh.Commands) {
-		t.Errorf("Setup() did not execute OperationsHandler commands in the right order, calls were: %+v", oh.Commands)
+		t.Errorf("Setup() did not execute OperationsHandler commands in the right order, calls were: %+v but I expected %+v", oh.Commands, expectedCommands)
 	}
 }
 

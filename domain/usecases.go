@@ -15,22 +15,17 @@ import (
 	"errors"
 )
 
-type Command interface {}
-
 type MachineRepository interface {
 	Store(machine *Machine) error
 	FindById(id string) (*Machine, error)
 	GetAll() (map[string]*Machine, error)
 }
 
-type Procedure interface {
-	Add(command Command)
-	Start() chan int
-}
-
 type MachineOperationsHandler interface {
-	NewProcedure() Procedure
-	CommandCreateVirtualMachine(vmhostDnsName string, machineName string) (Command, error)
+	InitializeProcedure() string
+	AddCommandCreateVirtualMachine(procedureId string, vmhostDnsName string, machineName string) error
+	ExecuteProcedure(procedureId string) chan int
+	GetProcedureStatus(procedureId string) int
 	//	SetIpAddressInGuestimage(vmhostDnsName string, vmguestName string, ipAddress string) error
 	//	SetHostnameInGuestimage(vmhostDnsName string, vmguestName string, hostname string) error
 }
@@ -61,10 +56,9 @@ func (interactor *MachinesInteractor) SetupMachine(machineId string) (output str
 		if (machine.MachineType != V) {
 			return "", errors.New("Can't setup a non-virtual machine")
 		}
-		p := interactor.MachineOperationsHandler.NewProcedure()
-		command,_ := interactor.MachineOperationsHandler.CommandCreateVirtualMachine(machine.Vmhost.DnsName, machine.DnsName)
-		p.Add(command)
-		p.Start()
+		pId := interactor.MachineOperationsHandler.InitializeProcedure()
+		interactor.MachineOperationsHandler.AddCommandCreateVirtualMachine(pId, machine.Vmhost.DnsName, machine.DnsName)
+		interactor.MachineOperationsHandler.ExecuteProcedure(pId)
 	} else {
 		return "", err
 	}
