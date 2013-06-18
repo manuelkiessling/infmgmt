@@ -5,27 +5,44 @@ import (
 	"testing"
 )
 
+type MockCommand struct {
+	Command
+	TheCommand string
+}
+
+type MockProcedure struct {
+	Id                string
+	Status            int
+	OperationsHandler *MockOperationsHandler
+	Started           bool
+}
+
+func (p *MockProcedure) Add(command Command) {
+	p.OperationsHandler.Commands = append(p.OperationsHandler.Commands, command.TheCommand)
+}
+
+func (p *MockProcedure) Start() chan int {
+	c := make(chan int)
+	p.Status = 1
+	p.Started = true
+	c <- 1
+	return c
+}
+
 type MockOperationsHandler struct {
-	NumberOfCalls int
-	Calls         map[string]int
+	Commands []string
 }
 
-func (oh *MockOperationsHandler) CreateGuestImageFromBaseImage(vmhostDnsName string, newImageName string) error {
-	oh.Calls["CreateGuestImageFromBaseImage"] = oh.NumberOfCalls
-	oh.NumberOfCalls++
-	return nil
+func (oh *MockOperationsHandler) NewProcedure() Procedure {
+	p := new(MockProcedure)
+	p.OperationsHandler = oh
+	return p
 }
 
-func (oh *MockOperationsHandler) SetIpAddressInGuestimage(vmhostDnsName string, vmguestName string, ipAddress string) error {
-	oh.Calls["SetIpAddressInGuestimage"] = oh.NumberOfCalls
-	oh.NumberOfCalls++
-	return nil
-}
-
-func (oh *MockOperationsHandler) SetHostnameInGuestimage(vmhostDnsName string, vmguestName string, hostname string) error {
-	oh.Calls["SetHostnameInGuestimage"] = oh.NumberOfCalls
-	oh.NumberOfCalls++
-	return nil
+func (oh *MockOperationsHandler) CommandCreateVirtualMachine(vmhostDnsName string, machineName string) (Command, error) {
+	command := new(MockCommand)
+	command.TheCommand = "CommandCreateVirtualMachine " + vmhostDnsName + " " + machineName
+	return command, nil
 }
 
 type MockRepository struct {
@@ -55,18 +72,17 @@ func (repo *MockRepository) GetAll() (map[string]*Machine, error) {
 }
 
 func TestSetupMachineTriggersTheRightActions(t *testing.T) {
-	expectedCalls := make(map[string]int)
-	expectedCalls["CreateGuestImageFromBaseImage"] = 0
-	//expectedCalls["SetIpAddressInGuestimage"] = 1
-	//expectedCalls["SetHostnameInGuestimage"] = 2
+	expectedCommands := make([]string, 1)
+	expectedCommands = append(expectedCommands, "CreateVirtualMachine Machine 1 Machine 2")
+
 	oh := new(MockOperationsHandler)
-	oh.Calls = make(map[string]int)
+
 	interactor := new(MachinesInteractor)
 	interactor.MachineOperationsHandler = oh
 	interactor.MachineRepository = new(MockRepository)
 	interactor.SetupMachine("2")
-	if !reflect.DeepEqual(expectedCalls, oh.Calls) {
-		t.Errorf("Setup() did not execute OperationsHandler commands in the right order, calls were: %+v", oh.Calls)
+	if !reflect.DeepEqual(expectedCommands, oh.Commands) {
+		t.Errorf("Setup() did not execute OperationsHandler commands in the right order, calls were: %+v", oh.Commands)
 	}
 }
 
@@ -75,11 +91,8 @@ func TestSetupMachineSetsTheCorrectMachineState(t *testing.T) {
 }
 
 func TestSetupMachineFailsIfMachineIsNotVirtual(t *testing.T) {
-	oh := new(MockOperationsHandler)
-	oh.Calls = make(map[string]int)
-
 	interactor := new(MachinesInteractor)
-	interactor.MachineOperationsHandler = oh
+	interactor.MachineOperationsHandler = new(MockOperationsHandler)
 	interactor.MachineRepository = new(MockRepository)
 	_, err := interactor.SetupMachine("1")
 	if err == nil {

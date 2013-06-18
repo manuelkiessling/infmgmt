@@ -22,14 +22,13 @@ func TestCreateGuestImageFromBaseImage(t *testing.T) {
 	expected := "/usr/bin/touch /tmp/testfile-kvmhost1-virtual1"
 	commandExecutor := new(MockCommandExecutor)
 	oh := NewDefaultMachineOperationsHandler(commandExecutor)
-	p := oh.NewProcedure()
-	command, _ := oh.CommandCreateVirtualMachine("kvmhost1", "virtual1")
-	p.Add(command)
-	c := p.Start()
+	procedureId := oh.InitializeProcedure()
+	oh.AddCommandCreateVirtualMachine(procedureId, "kvmhost1", "virtual1")
+	c := oh.ExecuteProcedure(procedureId)
 	status := 0
 	for status == 0 {
 		<-c
-		status = p.Status
+		status = oh.GetProcedureStatus(procedureId)
 	}
 	if commandExecutor.Commandlines[0] != expected {
 		t.Errorf("OperationsHandler created commandline %+v, expected %+v", commandExecutor.Commandlines, expected)
