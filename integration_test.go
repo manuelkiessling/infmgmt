@@ -7,6 +7,7 @@ import (
 	"github.com/ManuelKiessling/infmgmt-backend/infrastructure"
 	"github.com/ManuelKiessling/infmgmt-backend/interfaces"
 	"github.com/coopernurse/gorp"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +15,7 @@ import (
 	"testing"
 )
 
-func setupRequestHandler() *interfaces.RequestHandler {
+func setupRouter() *mux.Router {
 	ce := new(infrastructure.DefaultCommandExecutor)
 	oh := interfaces.NewDefaultMachineOperationsHandler(ce)
 
@@ -33,8 +34,19 @@ func setupRequestHandler() *interfaces.RequestHandler {
 	mi := new(domain.MachinesInteractor)
 	mi.MachineRepository = mr
 	mi.MachineOperationsHandler = oh
+	rh := interfaces.NewRequestHandler(mi)
 
-	return interfaces.NewRequestHandler(mi)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/machines", func(res http.ResponseWriter, req *http.Request) {
+		rh.HandleMachinesRequest(res, req)
+	}).Methods("GET")
+
+	r.HandleFunc("/machines/{machineId}/setup", func(res http.ResponseWriter, req *http.Request) {
+		rh.HandleMachineSetupRequest(res, req)
+	}).Methods("POST")
+
+	return r
 }
 
 func TestGetMachines(t *testing.T) {
@@ -44,8 +56,8 @@ func TestGetMachines(t *testing.T) {
 	}
 
 	rec := httptest.NewRecorder()
-	requestHandler := setupRequestHandler()
-	requestHandler.HandleMachinesRequest(rec, req)
+	router := setupRouter()
+	router.ServeHTTP(rec, req)
 
 	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"kvmhost1\"},\"2\":{\"Id\":\"2\",\"DnsName\":\"virtual1\"}}"
 
@@ -54,17 +66,32 @@ func TestGetMachines(t *testing.T) {
 	}
 }
 
-func TestSetupFailingForPhysicalMachine(t *testing.T) {
-	req, err := http.NewRequest("POST", "http://example.com/machine/1/setup", nil)
+func TestSetupWorkingForVirtualMachine(t *testing.T) {
+	req, err := http.NewRequest("POST", "http://example.com/machines/2/setup", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	rec := httptest.NewRecorder()
 
-	requestHandler := setupRequestHandler()
+	router := setupRouter()
+	router.ServeHTTP(rec, req)
 
-	requestHandler.HandleMachineSetupRequest(rec, req)
+	if rec.Code != 200 {
+		t.Errorf("Expected response code 200, but got %+v from request %+v", rec, req)
+	}
+}
+
+func TestSetupFailingForPhysicalMachine(t *testing.T) {
+	req, err := http.NewRequest("POST", "http://example.com/machines/1/setup", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rec := httptest.NewRecorder()
+
+	router := setupRouter()
+	router.ServeHTTP(rec, req)
 
 	if rec.Code != 500 {
 		t.Errorf("Expected response code 500, but got %d", rec.Code)

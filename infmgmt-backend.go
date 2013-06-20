@@ -38,7 +38,7 @@ func main() {
 	// POST /machines/{machineId}/setup triggers the procedure that creates a virtual machine
 	r.HandleFunc("/machines/{machineId}/setup", func(res http.ResponseWriter, req *http.Request) {
 		rh.HandleMachineSetupRequest(res, req)
-	}).Methods("POST")
+	})
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
