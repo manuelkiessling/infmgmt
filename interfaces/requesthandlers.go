@@ -12,6 +12,24 @@ type RequestHandler struct {
 	machinesInteractor *domain.MachinesInteractor
 }
 
+func NewRouter(requestHandler *RequestHandler) *mux.Router {
+	router := mux.NewRouter()
+
+	// GET /machines returns a list of all machines
+	router.HandleFunc("/machines", func(res http.ResponseWriter, req *http.Request) {
+		requestHandler.HandleMachinesRequest(res, req)
+	})
+
+	// POST /machines creates a new machine entity with the given data
+
+	// POST /machines/{machineId}/setup triggers the procedure that creates a virtual machine
+	router.HandleFunc("/machines/{machineId}/setup", func(res http.ResponseWriter, req *http.Request) {
+		requestHandler.HandleMachineSetupRequest(res, req)
+	})
+
+	return router
+}
+
 func NewRequestHandler(machinesInteractor *domain.MachinesInteractor) *RequestHandler {
 	requestHandler := new(RequestHandler)
 	requestHandler.machinesInteractor = machinesInteractor

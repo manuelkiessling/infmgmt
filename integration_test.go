@@ -36,15 +36,7 @@ func setupRouter() *mux.Router {
 	mi.MachineOperationsHandler = oh
 	rh := interfaces.NewRequestHandler(mi)
 
-	r := mux.NewRouter()
-
-	r.HandleFunc("/machines", func(res http.ResponseWriter, req *http.Request) {
-		rh.HandleMachinesRequest(res, req)
-	}).Methods("GET")
-
-	r.HandleFunc("/machines/{machineId}/setup", func(res http.ResponseWriter, req *http.Request) {
-		rh.HandleMachineSetupRequest(res, req)
-	}).Methods("POST")
+	r := interfaces.NewRouter(rh)
 
 	return r
 }
