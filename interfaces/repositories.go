@@ -2,8 +2,8 @@ package interfaces
 
 import (
 	"fmt"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -12,8 +12,8 @@ type VmhostRepository struct {
 }
 
 type vmhostModel struct {
-	Id          string
-	DnsName     string
+	Id      string
+	DnsName string
 }
 
 func NewVmhostRepository(dbMap *gorp.DbMap) *VmhostRepository {
