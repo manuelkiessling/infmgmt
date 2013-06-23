@@ -13,8 +13,8 @@ func (oh *MockOperationsHandler) InitializeProcedure() string {
 	return "123"
 }
 
-func (oh *MockOperationsHandler) AddCommandCreateVirtualVmhost(procedureId string, vmhostDnsName string, vmguestName string) error {
-	oh.Commands = append(oh.Commands, "CreateVmguest "+vmhostDnsName+" "+vmhostName)
+func (oh *MockOperationsHandler) AddCommandCreateVirtualmachine(procedureId string, vmhostDnsName string, vmguestName string) error {
+	oh.Commands = append(oh.Commands, "CreateVirtualmachine "+vmhostDnsName+" "+vmguestName)
 	return nil
 }
 
@@ -40,7 +40,6 @@ func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
 		vmhost = &Vmhost{"1", "vmhost1"}
 	}
 	if id == "2" {
-		vmhost := &Vmhost{"1", "vmhost1"}
 		vmhost = &Vmhost{"2", "vmhost2"}
 	}
 	return vmhost, nil
@@ -53,9 +52,9 @@ func (repo *MockVmhostRepository) GetAll() (map[string]*Vmhost, error) {
 	return vmhosts, nil
 }
 
-func TestSetupVmhostTriggersTheRightActions(t *testing.T) {
+func TestSetupVmguestTriggersTheRightActions(t *testing.T) {
 	expectedCommands := make([]string, 1)
-	expectedCommands[0] = "CreateVmguest vmhost1 vmguest1"
+	expectedCommands[0] = "CreateVirtualmachine vmhost1 vmguest1"
 
 	oh := new(MockOperationsHandler)
 

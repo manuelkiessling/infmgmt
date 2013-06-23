@@ -21,9 +21,9 @@ func TestCreateGuestImageFromBaseImage(t *testing.T) {
 	//expected := "ssh root@kvmhost cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/newimage.raw"
 	expected := "/usr/bin/touch /tmp/testfile-kvmhost1-virtual1"
 	commandExecutor := new(MockCommandExecutor)
-	oh := NewDefaultMachineOperationsHandler(commandExecutor)
+	oh := NewDefaultVmhostOperationsHandler(commandExecutor)
 	procedureId := oh.InitializeProcedure()
-	oh.AddCommandCreateVirtualMachine(procedureId, "kvmhost1", "virtual1")
+	oh.AddCommandCreateVirtualmachine(procedureId, "kvmhost1", "virtual1")
 	c := oh.ExecuteProcedure(procedureId)
 	status := 0
 	for status == 0 {
@@ -34,15 +34,3 @@ func TestCreateGuestImageFromBaseImage(t *testing.T) {
 		t.Errorf("OperationsHandler created commandline %+v, expected %+v", commandExecutor.Commandlines, expected)
 	}
 }
-
-//func Test() {
-//	operationsHandler := NewOperationsHandler()
-//	procedure := operationsHandler.NewProcedure()
-//	procedure.Add(operationsHandler.OperationCreateVirtualMachine("kvmhost1", "virtual1"))
-//	procedure.Add(operationsHandler.OperationSetVirtualMachineHostname("virtual1"))
-//	procedure.Run()
-//	id := procedure.Id()
-//	procedure := operationsHandler.getProcedure(Id)
-//	status := procedure.Status()
-//	output := procedure.Output()
-//}

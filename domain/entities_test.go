@@ -5,5 +5,5 @@ import (
 )
 
 func TestAddVmhost(t *testing.T) {
-	pm, err := NewVmhost("kvmhost3")
+	NewVmhost("kvmhost3")
 }

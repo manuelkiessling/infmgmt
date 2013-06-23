@@ -38,19 +38,19 @@ func (p *procedure) Start() chan int {
 	return c
 }
 
-type DefaultMachineOperationsHandler struct {
+type DefaultVmhostOperationsHandler struct {
 	commandExecutor CommandExecutor
 	procedures      map[string]*procedure
 }
 
-func NewDefaultMachineOperationsHandler(commandExecutor CommandExecutor) *DefaultMachineOperationsHandler {
-	oh := new(DefaultMachineOperationsHandler)
+func NewDefaultVmhostOperationsHandler(commandExecutor CommandExecutor) *DefaultVmhostOperationsHandler {
+	oh := new(DefaultVmhostOperationsHandler)
 	oh.commandExecutor = commandExecutor
 	oh.procedures = make(map[string]*procedure)
 	return oh
 }
 
-func (oh *DefaultMachineOperationsHandler) InitializeProcedure() string {
+func (oh *DefaultVmhostOperationsHandler) InitializeProcedure() string {
 	procedure := new(procedure)
 	uuid, _ := simpleuuid.NewTime(time.Now())
 	procedure.Id = uuid.String()
@@ -59,19 +59,19 @@ func (oh *DefaultMachineOperationsHandler) InitializeProcedure() string {
 	return procedure.Id
 }
 
-func (oh *DefaultMachineOperationsHandler) AddCommandCreateVirtualMachine(procedureId string, vmhostDnsName string, machineName string) error {
+func (oh *DefaultVmhostOperationsHandler) AddCommandCreateVirtualmachine(procedureId string, vmhostDnsName string, virtualmachineName string) error {
 	command := new(Command)
 	command.Name = "/usr/bin/touch"
-	command.Arguments = append(command.Arguments, "/tmp/testfile-"+vmhostDnsName+"-"+machineName)
+	command.Arguments = append(command.Arguments, "/tmp/testfile-"+vmhostDnsName+"-"+virtualmachineName)
 	oh.procedures[procedureId].Add(command)
 	//("ssh root@" + vmhostDnsName + " cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/" + newImageName + ".raw")
 	return nil
 }
 
-func (oh *DefaultMachineOperationsHandler) ExecuteProcedure(procedureId string) chan int {
+func (oh *DefaultVmhostOperationsHandler) ExecuteProcedure(procedureId string) chan int {
 	return oh.procedures[procedureId].Start()
 }
 
-func (oh *DefaultMachineOperationsHandler) GetProcedureStatus(procedureId string) int {
+func (oh *DefaultVmhostOperationsHandler) GetProcedureStatus(procedureId string) int {
 	return oh.procedures[procedureId].Status
 }

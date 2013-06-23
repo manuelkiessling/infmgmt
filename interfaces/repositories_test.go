@@ -2,7 +2,7 @@ package interfaces
 
 import (
 	"database/sql"
-	"github.com/ManuelKiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
 	_ "github.com/mattn/go-sqlite3"
 	_ "log"
@@ -25,8 +25,8 @@ func (repo *VmhostRepository) reset() {
 }
 
 func TestVmhostRepositoryStore(t *testing.T) {
-	vmhost, _ := domain.NewVmhost("kvm1")
-	repo := setupRepo()
+	vmhost, _ := domain.NewVmhost("vmhost1")
+	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
 	err := repo.Store(vmhost)
@@ -36,8 +36,8 @@ func TestVmhostRepositoryStore(t *testing.T) {
 }
 
 func TestVmhostRepositoryFindById(t *testing.T) {
-	vmhost, _ := domain.NewVmhost("kvm-original")
-	repo := setupRepo()
+	vmhost, _ := domain.NewVmhost("vmhost-original")
+	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
 	repo.Store(vmhost)
@@ -45,7 +45,7 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 	dnsName := vmhost.DnsName
 	vmhost = nil
 	repo = nil
-	newRepo := setupRepo()
+	newRepo := setupVmhostRepo()
 	retrievedVmhost, err := newRepo.FindById(id)
 	if err != nil {
 		t.Errorf("Failed retrieving vmhost with id '%v' from repo %+v", id, repo)
@@ -62,7 +62,7 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 
 func TestVmhostRepositoryGetAll(t *testing.T) {
 	var vmhost *domain.Vmhost
-	repo := setupRepo()
+	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
 	for i := 0; i < 10; i++ {

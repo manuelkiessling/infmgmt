@@ -1,18 +1,8 @@
 package interfaces
 
-/*
-
-- hier ist der befehlszeilen-zusammenbauer implementiert, der vom usecases layer benutzt wird um zB eine VM zu installieren
-  oder puppet agent auszuführen usw.
-- nutzt executor im infrastructure layer, um befehle tatsächlich auszuführen und deren ergebnis zu bekommen
-- bekommt von aufrufer die infos als nackte daten, zB name der vm, größe arbeitsspeicher usw.
-- webservice kann entscheiden einen json endpunkt anzubieten der alle vmhost infos auf einmal zurückgibt
-
-*/
-
 import (
 	"fmt"
-	"github.com/ManuelKiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -35,14 +25,9 @@ func NewVmhostRepository(dbMap *gorp.DbMap) *VmhostRepository {
 }
 
 func (repo *VmhostRepository) Store(vmhost *domain.Vmhost) error {
-	var mm *vmhostModel
-	if vmhost.Vmhost == nil {
-		mm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName}
-	} else {
-		repo.Store(vmhost.Vmhost)
-		mm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName}
-	}
-	return repo.dbMap.Insert(mm)
+	var vm *vmhostModel
+	vm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName}
+	return repo.dbMap.Insert(vm)
 }
 
 func (repo *VmhostRepository) FindById(id string) (*domain.Vmhost, error) {
@@ -50,8 +35,8 @@ func (repo *VmhostRepository) FindById(id string) (*domain.Vmhost, error) {
 	var err error
 	obj, err := repo.dbMap.Get(vmhostModel{}, id)
 	if obj != nil {
-		mm := obj.(*vmhostModel)
-		vmhost = repo.getVmhostFromVmhostModel(mm)
+		vm := obj.(*vmhostModel)
+		vmhost = repo.getVmhostFromVmhostModel(vm)
 	} else {
 		vmhost = nil
 		err = fmt.Errorf("No vmhost with id %v in repository", id)
@@ -70,12 +55,6 @@ func (repo *VmhostRepository) GetAll() (map[string]*domain.Vmhost, error) {
 	return vmhosts, nil
 }
 
-func (repo *VmhostRepository) getVmhostFromVmhostModel(mm *vmhostModel) *domain.Vmhost {
-	var vmhost *domain.Vmhost
-	if mm.VmhostId == "" {
-		vmhost = nil
-	} else {
-		vmhost, _ = repo.FindById(mm.VmhostId)
-	}
-	return &domain.Vmhost{Id: mm.Id, DnsName: mm.DnsName}
+func (repo *VmhostRepository) getVmhostFromVmhostModel(vm *vmhostModel) *domain.Vmhost {
+	return &domain.Vmhost{Id: vm.Id, DnsName: vm.DnsName}
 }

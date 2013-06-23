@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	_ "fmt"
-	"github.com/ManuelKiessling/infmgmt-backend/domain"
-	"github.com/ManuelKiessling/infmgmt-backend/infrastructure"
-	"github.com/ManuelKiessling/infmgmt-backend/interfaces"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
+	"github.com/manuelkiessling/infmgmt-backend/interfaces"
 	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
 	"log"
@@ -17,23 +17,23 @@ import (
 
 func setupRouter() *mux.Router {
 	ce := new(infrastructure.DefaultCommandExecutor)
-	oh := interfaces.NewDefaultMachineOperationsHandler(ce)
+	oh := interfaces.NewDefaultVmhostOperationsHandler(ce)
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 
-	mr := interfaces.NewMachineRepository(dbMap)
+	mr := interfaces.NewVmhostRepository(dbMap)
 
 	dbMap.DropTables()
 	dbMap.CreateTables()
-	dbMap.Exec("INSERT INTO machines (Id, DnsName, MachineType, VmhostId) VALUES (?, ?, ?, ?)", "1", "kvmhost1", 0, "")
-	dbMap.Exec("INSERT INTO machines (Id, DnsName, MachineType, VmhostId) VALUES (?, ?, ?, ?)", "2", "virtual1", 1, "1")
+	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "kvmhost1")
+	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "2", "kvmhost2")
 
-	mi := new(domain.MachinesInteractor)
-	mi.MachineRepository = mr
-	mi.MachineOperationsHandler = oh
+	mi := new(domain.VmhostsInteractor)
+	mi.VmhostRepository = mr
+	mi.VmhostOperationsHandler = oh
 	rh := interfaces.NewRequestHandler(mi)
 
 	r := interfaces.NewRouter(rh)
@@ -41,8 +41,8 @@ func setupRouter() *mux.Router {
 	return r
 }
 
-func TestGetMachines(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://example.com/machines", nil)
+func TestGetVmhosts(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://example.com/vmhosts", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestGetMachines(t *testing.T) {
 	router := setupRouter()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"kvmhost1\"},\"2\":{\"Id\":\"2\",\"DnsName\":\"virtual1\"}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"kvmhost1\"},\"2\":{\"Id\":\"2\",\"DnsName\":\"kvmhost2\"}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -59,7 +59,7 @@ func TestGetMachines(t *testing.T) {
 }
 
 func TestSetupWorkingForVirtualMachine(t *testing.T) {
-	req, err := http.NewRequest("POST", "http://example.com/machines/2/setup", nil)
+	req, err := http.NewRequest("POST", "http://example.com/vmhosts/1/vmguests/foo", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -71,21 +71,5 @@ func TestSetupWorkingForVirtualMachine(t *testing.T) {
 
 	if rec.Code != 200 {
 		t.Errorf("Expected response code 200, but got %+v from request %+v", rec, req)
-	}
-}
-
-func TestSetupFailingForPhysicalMachine(t *testing.T) {
-	req, err := http.NewRequest("POST", "http://example.com/machines/1/setup", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	rec := httptest.NewRecorder()
-
-	router := setupRouter()
-	router.ServeHTTP(rec, req)
-
-	if rec.Code != 500 {
-		t.Errorf("Expected response code 500, but got %d", rec.Code)
 	}
 }
