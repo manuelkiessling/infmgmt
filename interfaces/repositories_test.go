@@ -11,79 +11,66 @@ import (
 	"testing"
 )
 
-func setupRepo() *MachineRepository {
+func setupVmhostRepo() *VmhostRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	//dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	repo := NewMachineRepository(dbMap)
+	repo := NewVmhostRepository(dbMap)
 	return repo
 }
 
-func (repo *MachineRepository) reset() {
+func (repo *VmhostRepository) reset() {
 	//repo.dbMap.DropTables()
 	repo.dbMap.CreateTables()
 }
 
-func TestMachineRepositoryStore(t *testing.T) {
-	machine, _ := domain.NewMachine("foo", domain.P, nil)
+func TestVmhostRepositoryStore(t *testing.T) {
+	vmhost, _ := domain.NewVmhost("kvm1")
 	repo := setupRepo()
 	repo.reset()
 	defer repo.reset()
-	err := repo.Store(machine)
+	err := repo.Store(vmhost)
 	if err != nil {
-		t.Errorf("Failed storing machine %+v in repo %+v", machine, repo)
+		t.Errorf("Failed storing vmhost %+v in repo %+v", vmhost, repo)
 	}
 }
 
-func TestMachineRepositoryFindById(t *testing.T) {
-	machine, _ := domain.NewMachine("original", domain.P, nil)
+func TestVmhostRepositoryFindById(t *testing.T) {
+	vmhost, _ := domain.NewVmhost("kvm-original")
 	repo := setupRepo()
 	repo.reset()
 	defer repo.reset()
-	repo.Store(machine)
-	id := machine.Id
-	dnsName := machine.DnsName
-	machine = nil
+	repo.Store(vmhost)
+	id := vmhost.Id
+	dnsName := vmhost.DnsName
+	vmhost = nil
 	repo = nil
 	newRepo := setupRepo()
-	retrievedMachine, err := newRepo.FindById(id)
+	retrievedVmhost, err := newRepo.FindById(id)
 	if err != nil {
-		t.Errorf("Failed retrieving machine with id '%v' from repo %+v", id, repo)
+		t.Errorf("Failed retrieving vmhost with id '%v' from repo %+v", id, repo)
 		return
 	}
-	if retrievedMachine == nil {
-		t.Errorf("Repo %+v did not return a machine", newRepo)
+	if retrievedVmhost == nil {
+		t.Errorf("Repo %+v did not return a vmhost", newRepo)
 		return
 	}
-	if retrievedMachine.DnsName != dnsName {
-		t.Errorf("Repo %+v did not return the correct machine: %+v", newRepo, retrievedMachine)
+	if retrievedVmhost.DnsName != dnsName {
+		t.Errorf("Repo %+v did not return the correct vmhost: %+v", newRepo, retrievedVmhost)
 	}
 }
 
-func TestStoringVirtualMachineAlsoStoresItsVmhost(t *testing.T) {
-	vmhost, _ := domain.NewMachine("vmhoststoretest", domain.P, nil)
-	machine, _ := domain.NewMachine("originalstoretest", domain.V, vmhost)
-	repo := setupRepo()
-	repo.reset()
-	defer repo.reset()
-	repo.Store(machine)
-	vmhost, _ = repo.FindById(vmhost.Id)
-	if (vmhost == nil) {
-		t.Errorf("Should have stored the Vmhost, but didn't")
-	}
-}
-
-func TestMachineRepositoryGetAll(t *testing.T) {
-	var machine *domain.Machine
+func TestVmhostRepositoryGetAll(t *testing.T) {
+	var vmhost *domain.Vmhost
 	repo := setupRepo()
 	repo.reset()
 	defer repo.reset()
 	for i := 0; i < 10; i++ {
-		machine, _ = domain.NewMachine(strconv.Itoa(i), domain.P, nil)
-		repo.Store(machine)
+		vmhost, _ = domain.NewVmhost(strconv.Itoa(i))
+		repo.Store(vmhost)
 	}
-	machines, _ := repo.GetAll()
-	if machines[machine.Id].DnsName != "9" {
-		t.Errorf("DnsName of retrieved machine %v (%+v) did not match DnsName of stored machine %+v", machine.Id, machines[machine.Id], machine)
+	vmhosts, _ := repo.GetAll()
+	if vmhosts[vmhost.Id].DnsName != "9" {
+		t.Errorf("DnsName of retrieved vmhost %v (%+v) did not match DnsName of stored vmhost %+v", vmhost.Id, vmhosts[vmhost.Id], vmhost)
 	}
 }
