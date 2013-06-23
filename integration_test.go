@@ -24,7 +24,7 @@ func setupRouter() *mux.Router {
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 
-	mr := interfaces.NewVmhostRepository(dbMap)
+	vr := interfaces.NewVmhostRepository(dbMap)
 
 	dbMap.DropTables()
 	dbMap.CreateTables()
@@ -32,7 +32,7 @@ func setupRouter() *mux.Router {
 	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "2", "kvmhost2")
 
 	mi := new(domain.VmhostsInteractor)
-	mi.VmhostRepository = mr
+	mi.VmhostRepository = vr
 	mi.VmhostOperationsHandler = oh
 	rh := interfaces.NewRequestHandler(mi)
 

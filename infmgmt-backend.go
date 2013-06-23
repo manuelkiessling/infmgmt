@@ -18,10 +18,10 @@ func main() {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	mr := interfaces.NewVmhostRepository(dbMap)
+	vr := interfaces.NewVmhostRepository(dbMap)
 
 	mi := new(domain.VmhostsInteractor)
-	mi.VmhostRepository = mr
+	mi.VmhostRepository = vr
 	mi.VmhostOperationsHandler = oh
 
 	rh := interfaces.NewRequestHandler(mi)
