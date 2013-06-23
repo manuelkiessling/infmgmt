@@ -35,28 +35,25 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 	var arguments []string
 	var vmguests []*domain.Vmguest
 
-	command = "ssh"
+	command = "/usr/bin/ssh"
 	arguments = append(arguments, "root@"+vmhostDnsName)
 	arguments = append(arguments, "'virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l'")
 	output, _ = repo.commandExecutor.Run(command, arguments...)
   machineCount, _ = strconv.Atoi(strings.TrimSpace(output))
 
 	for i := 0; i < machineCount; i++ {
-		command = "ssh"
 		arguments = nil
 		arguments = append(arguments, "root@"+vmhostDnsName)
 		arguments = append(arguments, "'virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=8-38'")
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		name = strings.TrimSpace(output)
 
-		command = "ssh"
 		arguments = nil
 		arguments = append(arguments, "root@"+vmhostDnsName)
 		arguments = append(arguments, "'virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=39-52'")
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		state = strings.TrimSpace(output)
 
-		command = "ssh"
 		arguments = nil
 		arguments = append(arguments, "root@"+vmhostDnsName)
 		arguments = append(arguments, "'virsh dumpxml "+name+" | grep uuid | cut --bytes=9-44'")
