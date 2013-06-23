@@ -5,11 +5,10 @@ import (
 	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
 	_ "github.com/mattn/go-sqlite3"
-	"log"
-	"os"
+	_ "log"
+	_ "os"
 	"strconv"
 	"testing"
-	"reflect"
 )
 
 type MockVmguestRepositoryCommandExecutor struct {
@@ -17,14 +16,19 @@ type MockVmguestRepositoryCommandExecutor struct {
 }
 
 func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	var expectedArguments []string
-	expectedArguments = make([]string, 0)
-	expectedArguments = append(expectedArguments, "root@kvmhost1")
-	expectedArguments = append(expectedArguments, "'virsh list --all'")
-	if command == "ssh" && reflect.DeepEqual(arguments, expectedArguments) {
-		return " Id    Name                           State\n----------------------------------------------------\n 2     virtual1                           running", nil
+	if arguments[1] == "'virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l'" {
+		return "1", nil
 	}
-  return "", nil
+	if arguments[1] == "'virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=8-38'" {
+		return "virtual1", nil
+	}
+	if arguments[1] == "'virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=39-52'" {
+		return "running", nil
+	}
+	if arguments[1] == "'virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44'" {
+		return "67890", nil
+	}
+	return "", nil
 }
 
 func setupVmguestRepo() *VmguestRepository {
@@ -35,7 +39,7 @@ func setupVmguestRepo() *VmguestRepository {
 func setupVmhostRepo() *VmhostRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	//dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	repo := NewVmhostRepository(dbMap, setupVmguestRepo())
 	return repo
 }
@@ -78,6 +82,12 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 	}
 	if retrievedVmhost.DnsName != dnsName {
 		t.Errorf("Repo %+v did not return the correct vmhost: %+v", newRepo, retrievedVmhost)
+		return
+	}
+	vmguest := retrievedVmhost.Vmguests[0]
+	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "67890" {
+		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests[0])
+		return
 	}
 }
 
