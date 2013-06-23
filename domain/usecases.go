@@ -22,7 +22,7 @@ type VmhostRepository interface {
 
 type VmhostOperationsHandler interface {
 	InitializeProcedure() string
-	AddCommandCreateVirtualmachine(procedureId string, vmhostDnsName string, vmguestName string) error
+	AddCommandsCreateVirtualmachine(procedureId string, vmhostDnsName string, vmguestName string) error
 	ExecuteProcedure(procedureId string) chan int
 	GetProcedureStatus(procedureId string) int
 	//	SetIpAddressInGuestimage(vmhostDnsName string, vmguestName string, ipAddress string) error
@@ -53,7 +53,7 @@ func (interactor *VmhostsInteractor) CreateVmguest(vmhostId string, vmguestName 
 	vmhost, err := interactor.VmhostRepository.FindById(vmhostId)
 	if err == nil {
 		pId := interactor.VmhostOperationsHandler.InitializeProcedure()
-		interactor.VmhostOperationsHandler.AddCommandCreateVirtualmachine(pId, vmhost.DnsName, vmguestName)
+		interactor.VmhostOperationsHandler.AddCommandsCreateVirtualmachine(pId, vmhost.DnsName, vmguestName)
 		interactor.VmhostOperationsHandler.ExecuteProcedure(pId)
 	} else {
 		return "", err

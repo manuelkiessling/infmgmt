@@ -18,19 +18,22 @@ func (ce *MockCommandExecutor) Run(command string, arguments ...string) (output 
 }
 
 func TestCreateGuestImageFromBaseImage(t *testing.T) {
-	//expected := "ssh root@kvmhost cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/newimage.raw"
-	expected := "/usr/bin/touch /tmp/testfile-kvmhost1-virtual1"
+	expected0 := "ssh root@kvmhost1 'cp /var/lib/libvirt/images/infmgmt-base.raw /var/lib/libvirt/images/virtual1.raw'"
+	expected1 := "ssh root@kvmhost1 'virt-install virtual1'"
 	commandExecutor := new(MockCommandExecutor)
 	oh := NewDefaultVmhostOperationsHandler(commandExecutor)
 	procedureId := oh.InitializeProcedure()
-	oh.AddCommandCreateVirtualmachine(procedureId, "kvmhost1", "virtual1")
+	oh.AddCommandsCreateVirtualmachine(procedureId, "kvmhost1", "virtual1")
 	c := oh.ExecuteProcedure(procedureId)
 	status := 0
 	for status == 0 {
 		<-c
 		status = oh.GetProcedureStatus(procedureId)
 	}
-	if commandExecutor.Commandlines[0] != expected {
-		t.Errorf("OperationsHandler created commandline %+v, expected %+v", commandExecutor.Commandlines, expected)
+	if commandExecutor.Commandlines[0] != expected0 {
+		t.Errorf("OperationsHandler created commandline %+s, expected %+s", commandExecutor.Commandlines[0], expected0)
+	}
+	if commandExecutor.Commandlines[1] != expected1 {
+		t.Errorf("OperationsHandler created commandline %+s, expected %+s", commandExecutor.Commandlines[1], expected1)
 	}
 }

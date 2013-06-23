@@ -59,12 +59,18 @@ func (oh *DefaultVmhostOperationsHandler) InitializeProcedure() string {
 	return procedure.Id
 }
 
-func (oh *DefaultVmhostOperationsHandler) AddCommandCreateVirtualmachine(procedureId string, vmhostDnsName string, virtualmachineName string) error {
-	command := new(Command)
-	command.Name = "/usr/bin/touch"
-	command.Arguments = append(command.Arguments, "/tmp/testfile-"+vmhostDnsName+"-"+virtualmachineName)
+func (oh *DefaultVmhostOperationsHandler) AddCommandsCreateVirtualmachine(procedureId string, vmhostDnsName string, virtualmachineName string) error {
+	var command *Command
+	command = new(Command)
+	command.Name = "ssh"
+	command.Arguments = append(command.Arguments, "root@"+vmhostDnsName)
+	command.Arguments = append(command.Arguments, "'cp /var/lib/libvirt/images/infmgmt-base.raw /var/lib/libvirt/images/"+virtualmachineName+".raw'")
 	oh.procedures[procedureId].Add(command)
-	//("ssh root@" + vmhostDnsName + " cp /var/lib/libvirt/images/infmgmgt-base.raw /var/lib/libvirt/images/" + newImageName + ".raw")
+	command = new(Command)
+	command.Name = "ssh"
+	command.Arguments = append(command.Arguments, "root@"+vmhostDnsName)
+	command.Arguments = append(command.Arguments, "'virt-install "+virtualmachineName+"'")
+	oh.procedures[procedureId].Add(command)
 	return nil
 }
 

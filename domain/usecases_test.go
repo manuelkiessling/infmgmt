@@ -13,8 +13,8 @@ func (oh *MockOperationsHandler) InitializeProcedure() string {
 	return "123"
 }
 
-func (oh *MockOperationsHandler) AddCommandCreateVirtualmachine(procedureId string, vmhostDnsName string, vmguestName string) error {
-	oh.Commands = append(oh.Commands, "CreateVirtualmachine "+vmhostDnsName+" "+vmguestName)
+func (oh *MockOperationsHandler) AddCommandsCreateVirtualmachine(procedureId string, vmhostDnsName string, virtualmachineName string) error {
+	oh.Commands = append(oh.Commands, "CreateVirtualmachine "+vmhostDnsName+" "+virtualmachineName)
 	return nil
 }
 
