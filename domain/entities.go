@@ -9,24 +9,27 @@ package domain
 
 import (
 	_ "errors"
-	"github.com/streadway/simpleuuid"
-	"time"
-)
-
-const (
-	P = 0
-	V = 1
 )
 
 type Vmhost struct {
-	Id          string
-	DnsName     string
+	Id      string
+	DnsName string
+	Vmguests []*Vmguest
 }
 
-func NewVmhost(dnsName string) (newVmhost *Vmhost, err error) {
-	uuid, _ := simpleuuid.NewTime(time.Now())
-	id := uuid.String()
+type Vmguest struct {
+	Id      string
+	Name    string
+	DnsName string
+	State   string
+}
 
-	vmhost := &Vmhost{id, dnsName}
+func NewVmhost(id string, dnsName string, vmguests []*Vmguest) (newVmhost *Vmhost, err error) {
+	vmhost := &Vmhost{id, dnsName, vmguests}
 	return vmhost, nil
+}
+
+func NewVmguest(id string, name string, dnsName string, state string) (newVmguest *Vmguest, err error) {
+	vmguest := &Vmguest{id, name, dnsName, state}
+	return vmguest, nil
 }

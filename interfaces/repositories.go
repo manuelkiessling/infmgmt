@@ -7,6 +7,10 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type VmguestRepository struct {
+	commandExecutor CommandExecutor
+}
+
 type VmhostRepository struct {
 	dbMap *gorp.DbMap
 }
@@ -16,7 +20,11 @@ type vmhostModel struct {
 	DnsName string
 }
 
-func NewVmhostRepository(dbMap *gorp.DbMap) *VmhostRepository {
+func NewVmguestRepository(commandExecutor CommandExecutor) *VmguestRepository {
+	return &VmguestRepository{commandExecutor}
+}
+
+func NewVmhostRepository(dbMap *gorp.DbMap, vmguestRepository *VmguestRepository) *VmhostRepository {
 	// SetKeys(false) means we do have a primary key ("Id"), but we set it ourselves (no autoincrement)
 	dbMap.AddTableWithName(vmhostModel{}, "vmhosts").SetKeys(false, "Id")
 	repo := new(VmhostRepository)

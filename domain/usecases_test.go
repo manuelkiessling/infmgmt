@@ -36,19 +36,16 @@ func (repo *MockVmhostRepository) Store(vmhost *Vmhost) error {
 
 func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
 	var vmhost *Vmhost
-	if id == "1" {
-		vmhost = &Vmhost{"1", "vmhost1"}
-	}
-	if id == "2" {
-		vmhost = &Vmhost{"2", "vmhost2"}
-	}
+	vmguests := make([]*Vmguest, 0)
+	vmhost = &Vmhost{id, "vmhost"+id, vmguests}
 	return vmhost, nil
 }
 
 func (repo *MockVmhostRepository) GetAll() (map[string]*Vmhost, error) {
+	vmguests := make([]*Vmguest, 0)
 	vmhosts := make(map[string]*Vmhost)
-	vmhosts["1"] = &Vmhost{"1", "vmhost1"}
-	vmhosts["2"] = &Vmhost{"2", "vmhost2"}
+	vmhosts["1"] = &Vmhost{"1", "vmhost1", vmguests}
+	vmhosts["2"] = &Vmhost{"2", "vmhost2", vmguests}
 	return vmhosts, nil
 }
 
