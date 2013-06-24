@@ -26,7 +26,7 @@ func main() {
 	vmhost, _ := domain.NewVmhost("1", "localhost", nil)
 	vhr.Store(vmhost)
 	vmhost, _ = vhr.FindById("1")
-	fmt.Printf("Guests: %+v", vmhost.Vmguests[0])
+	fmt.Printf("Guests: %+v\n", vmhost.Vmguests[0])
 
 //	mi := new(domain.VmhostsInteractor)
 //	mi.VmhostRepository = vhr

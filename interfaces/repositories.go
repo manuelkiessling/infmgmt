@@ -5,8 +5,8 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
 	_ "github.com/mattn/go-sqlite3"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 type VmguestRepository struct {
@@ -14,7 +14,7 @@ type VmguestRepository struct {
 }
 
 type VmhostRepository struct {
-	dbMap *gorp.DbMap
+	dbMap             *gorp.DbMap
 	vmguestRepository *VmguestRepository
 }
 
@@ -35,28 +35,32 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 	var arguments []string
 	var vmguests []*domain.Vmguest
 
-	command = "/usr/bin/ssh"
+	command = "ssh"
+	arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 	arguments = append(arguments, "root@"+vmhostDnsName)
-	arguments = append(arguments, "'virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l'")
+	arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l", " ")...)
 	output, _ = repo.commandExecutor.Run(command, arguments...)
-  machineCount, _ = strconv.Atoi(strings.TrimSpace(output))
+	machineCount, _ = strconv.Atoi(strings.TrimSpace(output))
 
 	for i := 0; i < machineCount; i++ {
 		arguments = nil
+		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, "'virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=8-38'")
+		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=8-38", " ")...)
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		name = strings.TrimSpace(output)
 
 		arguments = nil
+		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, "'virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=39-52'")
+		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=39-52", " ")...)
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		state = strings.TrimSpace(output)
 
 		arguments = nil
+		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, "'virsh dumpxml "+name+" | grep uuid | cut --bytes=9-44'")
+		arguments = append(arguments, strings.Split("virsh dumpxml "+name+" | grep uuid | cut --bytes=9-44", " ")...)
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		id = strings.TrimSpace(output)
 

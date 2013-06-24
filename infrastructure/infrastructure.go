@@ -9,18 +9,22 @@ package infrastructure
 import (
 	"fmt"
 	"os/exec"
+	"log"
 )
 
 type DefaultCommandExecutor struct{}
 
 func (ce *DefaultCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	fmt.Printf("Now running: %s with args %+v", command, arguments)
+	fmt.Printf("Now running: %s with args %+v\n", command, arguments)
 	cmd := exec.Command(command, arguments...)
 
 	outputBytes, err := cmd.Output()
-	fmt.Printf("OutputBytes and error: %s - %+v", outputBytes, err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	output = fmt.Sprintf("%s", outputBytes)
-	fmt.Printf("Output: %s", output)
+	fmt.Printf("Output: %s\n", output)
+
 	return output, err
 }
