@@ -2,12 +2,13 @@ package interfaces
 
 import (
 	"database/sql"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"github.com/coopernurse/gorp"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
 	_ "github.com/mattn/go-sqlite3"
 	_ "log"
 	_ "os"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -16,17 +17,18 @@ type MockVmguestRepositoryCommandExecutor struct {
 }
 
 func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	if arguments[1] == "'virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l'" {
+	argumentsString := strings.Join(arguments, " ")
+	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
 		return "1", nil
 	}
-	if arguments[1] == "'virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=8-38'" {
+	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=8-38" {
 		return "virtual1", nil
 	}
-	if arguments[1] == "'virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=39-52'" {
+	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=39-52" {
 		return "running", nil
 	}
-	if arguments[1] == "'virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44'" {
-		return "67890", nil
+	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44" {
+		return "a0f39677-afda-f5bb-20b9-c5d8e3e06edf", nil
 	}
 	return "", nil
 }
@@ -85,7 +87,7 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 		return
 	}
 	vmguest := retrievedVmhost.Vmguests[0]
-	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "67890" {
+	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" {
 		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests[0])
 		return
 	}
