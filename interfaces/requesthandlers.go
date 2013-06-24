@@ -3,8 +3,8 @@ package interfaces
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"github.com/gorilla/mux"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
 	"net/http"
 )
 
@@ -17,13 +17,23 @@ func NewRouter(requestHandler *RequestHandler) *mux.Router {
 
 	// GET /vmhosts returns a list of all vmhosts
 	router.HandleFunc("/vmhosts", func(res http.ResponseWriter, req *http.Request) {
-		requestHandler.HandleVmhostsRequest(res, req)
+		requestHandler.HandleListVmhostsRequest(res, req)
 	})
 
-	// POST /vmhosts/{vmhostId}/create/vmguestName triggers the procedure that creates a virtual machine
-	router.HandleFunc("/vmhosts/{vmhostId}/vmguests/{vmguestName}", func(res http.ResponseWriter, req *http.Request) {
+	// GET /vmhosts/{vmhostId}/vmguests shows list of virtual machines on vmhost
+	router.HandleFunc("/vmhosts/{vmhostId}/vmguests", func(res http.ResponseWriter, req *http.Request) {
+		requestHandler.HandleListVmguestsRequest(res, req)
+	}).Methods("GET")
+
+	// GET /vmhosts/{vmhostId}/vmguests/{vmguestName} shows details of named virtual machine
+	//	router.HandleFunc("/vmhosts/{vmhostId}/vmguests/{vmguestName}", func(res http.ResponseWriter, req *http.Request) {
+	//		requestHandler.HandleShowVmguestRequest(res, req)
+	//	}).Methods("GET")
+
+	// POST /vmhosts/{vmhostId}/vmguests triggers the procedure that creates a virtual machine
+	router.HandleFunc("/vmhosts/{vmhostId}/vmguests", func(res http.ResponseWriter, req *http.Request) {
 		requestHandler.HandleCreateVmguestRequest(res, req)
-	})
+	}).Methods("POST")
 
 	return router
 }
@@ -34,11 +44,17 @@ func NewRequestHandler(vmhostsInteractor *domain.VmhostsInteractor) *RequestHand
 	return requestHandler
 }
 
-func (rh *RequestHandler) HandleVmhostsRequest(res http.ResponseWriter, req *http.Request) {
-	overviewList, _ := rh.vmhostsInteractor.GetOverviewList()
+func (rh *RequestHandler) HandleListVmhostsRequest(res http.ResponseWriter, req *http.Request) {
+	list, _ := rh.vmhostsInteractor.GetList()
+	jsonResponse, _ := json.Marshal(list)
+	res.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(res, "%s", jsonResponse)
+}
 
-	jsonResponse, _ := json.Marshal(overviewList)
-
+func (rh *RequestHandler) HandleListVmguestsRequest(res http.ResponseWriter, req *http.Request) {
+	vmhostId := mux.Vars(req)["vmhostId"]
+	list, _ := rh.vmhostsInteractor.GetVmguestsList(vmhostId)
+	jsonResponse, _ := json.Marshal(list)
 	res.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(res, "%s", jsonResponse)
 }

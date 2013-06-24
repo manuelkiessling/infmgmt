@@ -15,7 +15,7 @@ import (
 type DefaultCommandExecutor struct{}
 
 func (ce *DefaultCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	fmt.Printf("Now running: %s with args %+v\n", command, arguments)
+	log.Printf("Now running: %s with args %+v\n", command, arguments)
 	cmd := exec.Command(command, arguments...)
 
 	outputBytes, err := cmd.Output()
@@ -24,7 +24,7 @@ func (ce *DefaultCommandExecutor) Run(command string, arguments ...string) (outp
 	}
 
 	output = fmt.Sprintf("%s", outputBytes)
-	fmt.Printf("Output: %s\n", output)
+	log.Printf("Output: %s\n", output)
 
 	return output, err
 }

@@ -29,9 +29,15 @@ type VmhostOperationsHandler interface {
 	//	SetHostnameInGuestimage(vmhostDnsName string, vmguestName string, hostname string) error
 }
 
-type VmhostsOverviewListEntry struct {
+type VmhostsListEntry struct {
 	Id      string
 	DnsName string
+}
+
+type VmguestsListEntry struct {
+	Id      string
+	Name    string
+	State   string
 }
 
 type VmhostsInteractor struct {
@@ -39,14 +45,24 @@ type VmhostsInteractor struct {
 	VmhostOperationsHandler VmhostOperationsHandler
 }
 
-func (interactor *VmhostsInteractor) GetOverviewList() (map[string]*VmhostsOverviewListEntry, error) {
-	var vmhostsOverviewListEntries map[string]*VmhostsOverviewListEntry
+func (interactor *VmhostsInteractor) GetList() (map[string]*VmhostsListEntry, error) {
+	var list map[string]*VmhostsListEntry
 	vmhosts, nil := interactor.VmhostRepository.GetAll()
-	vmhostsOverviewListEntries = make(map[string]*VmhostsOverviewListEntry, len(vmhosts))
-	for i, vmhost := range vmhosts {
-		vmhostsOverviewListEntries[i] = &VmhostsOverviewListEntry{vmhost.Id, vmhost.DnsName}
+	list = make(map[string]*VmhostsListEntry, len(vmhosts))
+	for _, vmhost := range vmhosts {
+		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName}
 	}
-	return vmhostsOverviewListEntries, nil
+	return list, nil
+}
+
+func (interactor *VmhostsInteractor) GetVmguestsList(vmhostId string) (map[string]*VmguestsListEntry, error) {
+	var list map[string]*VmguestsListEntry
+	vmhost, nil := interactor.VmhostRepository.FindById(vmhostId)
+	list = make(map[string]*VmguestsListEntry, len(vmhost.Vmguests))
+	for _, vmguest := range vmhost.Vmguests {
+		list[vmguest.Id] = &VmguestsListEntry{vmguest.Id, vmguest.Name, vmguest.State}
+	}
+	return list, nil
 }
 
 func (interactor *VmhostsInteractor) CreateVmguest(vmhostId string, vmguestName string) (output string, err error) {

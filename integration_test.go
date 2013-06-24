@@ -17,6 +17,7 @@ import (
 
 func setupRouter() *mux.Router {
 	ce := new(infrastructure.DefaultCommandExecutor)
+	vgr := interfaces.NewVmguestRepository(ce)
 	oh := interfaces.NewDefaultVmhostOperationsHandler(ce)
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
@@ -24,15 +25,15 @@ func setupRouter() *mux.Router {
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 
-	vr := interfaces.NewVmhostRepository(dbMap)
+	vhr := interfaces.NewVmhostRepository(dbMap, vgr)
 
 	dbMap.DropTables()
 	dbMap.CreateTables()
-	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "kvmhost1")
-	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "2", "kvmhost2")
+	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "localhost")
+	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "2", "127.0.0.1")
 
 	mi := new(domain.VmhostsInteractor)
-	mi.VmhostRepository = vr
+	mi.VmhostRepository = vhr
 	mi.VmhostOperationsHandler = oh
 	rh := interfaces.NewRequestHandler(mi)
 
@@ -51,7 +52,24 @@ func TestGetVmhosts(t *testing.T) {
 	router := setupRouter()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"kvmhost1\"},\"2\":{\"Id\":\"2\",\"DnsName\":\"kvmhost2\"}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\"},\"2\":{\"Id\":\"2\",\"DnsName\":\"127.0.0.1\"}}"
+
+	if expected != rec.Body.String() {
+		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
+	}
+}
+
+func TestGetVmguests(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://example.com/vmhosts/1/vmguests", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rec := httptest.NewRecorder()
+	router := setupRouter()
+	router.ServeHTTP(rec, req)
+
+	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -59,7 +77,8 @@ func TestGetVmhosts(t *testing.T) {
 }
 
 func TestSetupWorkingForVirtualMachine(t *testing.T) {
-	req, err := http.NewRequest("POST", "http://example.com/vmhosts/1/vmguests/foo", nil)
+	return
+	req, err := http.NewRequest("POST", "http://example.com/vmhosts/1/vmguests", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
