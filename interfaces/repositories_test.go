@@ -17,17 +17,17 @@ type MockVmguestRepositoryCommandExecutor struct {
 }
 
 func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	argumentsString := strings.Join(arguments, " ")
-	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
+	commandline := command + " " + strings.Join(arguments, " ")
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
 		return "1", nil
 	}
-	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=8-38" {
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=8-38" {
 		return "virtual1", nil
 	}
-	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=39-52" {
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | cut --bytes=39-52" {
 		return "running", nil
 	}
-	if argumentsString == "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44" {
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44" {
 		return "a0f39677-afda-f5bb-20b9-c5d8e3e06edf", nil
 	}
 	return "", nil
