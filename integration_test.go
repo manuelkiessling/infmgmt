@@ -30,7 +30,6 @@ func setupRouter() *mux.Router {
 	dbMap.DropTables()
 	dbMap.CreateTables()
 	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "localhost")
-	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "2", "127.0.0.1")
 
 	mi := new(domain.VmhostsInteractor)
 	mi.VmhostRepository = vhr
@@ -52,7 +51,7 @@ func TestGetVmhosts(t *testing.T) {
 	router := setupRouter()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\"},\"2\":{\"Id\":\"2\",\"DnsName\":\"127.0.0.1\"}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\",\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())

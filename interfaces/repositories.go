@@ -46,14 +46,14 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 		arguments = nil
 		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=8-38", " ")...)
+		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f3", " ")...)
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		name = strings.TrimSpace(output)
 
 		arguments = nil
 		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | cut --bytes=39-52", " ")...)
+		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f4-", " ")...)
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		state = strings.TrimSpace(output)
 

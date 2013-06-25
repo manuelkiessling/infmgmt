@@ -30,14 +30,15 @@ type VmhostOperationsHandler interface {
 }
 
 type VmhostsListEntry struct {
-	Id      string
-	DnsName string
+	Id       string
+	DnsName  string
+	Vmguests map[string]*VmguestsListEntry
 }
 
 type VmguestsListEntry struct {
-	Id      string
-	Name    string
-	State   string
+	Id    string
+	Name  string
+	State string
 }
 
 type VmhostsInteractor struct {
@@ -50,7 +51,8 @@ func (interactor *VmhostsInteractor) GetList() (map[string]*VmhostsListEntry, er
 	vmhosts, nil := interactor.VmhostRepository.GetAll()
 	list = make(map[string]*VmhostsListEntry, len(vmhosts))
 	for _, vmhost := range vmhosts {
-		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName}
+		vmguestList, _ := interactor.GetVmguestsList(vmhost.Id)
+		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName, vmguestList}
 	}
 	return list, nil
 }
