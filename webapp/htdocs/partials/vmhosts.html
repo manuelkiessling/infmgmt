@@ -1,0 +1,10 @@
+<ul>
+  <li ng-repeat="vmhost in vmhosts">
+    <a href="#/vmhosts/{{vmhost.Id}}/vmguests">{{vmhost.DnsName}}</a>
+    <ul>
+      <li ng-repeat="vmguest in vmhost.Vmguests">
+        <a href="#/vmhosts/{{vmhost.Id}}/vmguests/{{vmguest.Id}}">{{vmguest.Name}}</a> [{{vmguest.State}}]
+      </li>
+    </ul>
+  </li>
+</ul>
