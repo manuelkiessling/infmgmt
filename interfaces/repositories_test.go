@@ -5,18 +5,21 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
 	_ "github.com/mattn/go-sqlite3"
-	_ "log"
-	_ "os"
+	 "log"
+	 "os"
 	"strconv"
 	"strings"
 	"testing"
 )
+
+var numberOfCommandCalls int
 
 type MockVmguestRepositoryCommandExecutor struct {
 	Commandlines []string
 }
 
 func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
+	numberOfCommandCalls++
 	commandline := command + " " + strings.Join(arguments, " ")
 	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
 		return "1", nil
@@ -34,8 +37,11 @@ func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ..
 }
 
 func setupVmguestRepo() *VmguestRepository {
+	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
+	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	ce := new(MockVmguestRepositoryCommandExecutor)
-	return NewVmguestRepository(ce)
+	return NewVmguestRepository(dbMap, ce)
 }
 
 func setupVmhostRepo() *VmhostRepository {
@@ -47,6 +53,11 @@ func setupVmhostRepo() *VmhostRepository {
 }
 
 func (repo *VmhostRepository) reset() {
+	repo.dbMap.DropTables()
+	repo.dbMap.CreateTables()
+}
+
+func (repo *VmguestRepository) reset() {
 	repo.dbMap.DropTables()
 	repo.dbMap.CreateTables()
 }
@@ -90,6 +101,23 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" {
 		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests[0])
 		return
+	}
+}
+
+func TestVmguestRepositoryCachesToDb(t *testing.T) {
+	repo := setupVmguestRepo()
+	repo.reset()
+	vmguests, _ := repo.GetAll("vmhost1")
+	if numberOfCommandCalls == 0 {
+		t.Errorf("CommandExecutor was not called")
+	}
+	numberOfCommandCalls = 0
+	vmguests, _ = repo.GetAll("vmhost1")
+	if numberOfCommandCalls != 0 {
+		t.Errorf("Expected vmguests to be retrieved from db instead of command line")
+	}
+	if vmguests[0].Name != "virtual1" {
+		t.Errorf("Couldn't get vmguests")
 	}
 }
 

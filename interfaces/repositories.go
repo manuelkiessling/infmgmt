@@ -10,7 +10,15 @@ import (
 )
 
 type VmguestRepository struct {
+	dbMap           *gorp.DbMap
 	commandExecutor CommandExecutor
+}
+
+type vmguestModel struct {
+	Id            string
+	VmhostDnsName string
+	Name          string
+	State         string
 }
 
 type VmhostRepository struct {
@@ -23,8 +31,9 @@ type vmhostModel struct {
 	DnsName string
 }
 
-func NewVmguestRepository(commandExecutor CommandExecutor) *VmguestRepository {
-	return &VmguestRepository{commandExecutor}
+func NewVmguestRepository(dbMap *gorp.DbMap, commandExecutor CommandExecutor) *VmguestRepository {
+	dbMap.AddTableWithName(vmguestModel{}, "vmguests").SetKeys(false, "Id")
+	return &VmguestRepository{dbMap, commandExecutor}
 }
 
 func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, error) {
@@ -34,6 +43,14 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 	var command string
 	var arguments []string
 	var vmguests []*domain.Vmguest
+
+	vmguestsFromDb, _ := repo.getAllFromDb(vmhostDnsName)
+	if len(vmguestsFromDb) > 0 {
+		for _, vmguestFromDb := range vmguestsFromDb {
+			vmguests = append(vmguests, vmguestFromDb)
+		}
+		return vmguests, nil
+	}
 
 	command = "ssh"
 	arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
@@ -66,8 +83,30 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 
 		vmguest, _ := domain.NewVmguest(id, name, state)
 		vmguests = append(vmguests, vmguest)
+		repo.storeToDb(vmhostDnsName, vmguest)
 	}
 	return vmguests, nil
+}
+
+func (repo *VmguestRepository) storeToDb(vmhostDnsName string, vmguest *domain.Vmguest) error {
+	var vm *vmguestModel
+	vm = &vmguestModel{Id: vmguest.Id, VmhostDnsName: vmhostDnsName, Name: vmguest.Name, State: vmguest.State}
+	return repo.dbMap.Insert(vm)
+}
+
+func (repo *VmguestRepository) getAllFromDb(vmhostDnsName string) (map[string]*domain.Vmguest, error) {
+	var results []*vmguestModel
+	vmguests := make(map[string]*domain.Vmguest)
+	query := "SELECT * FROM vmguests WHERE VmhostDnsName = ?"
+	repo.dbMap.Select(&results, query, vmhostDnsName)
+	for _, result := range results {
+		vmguests[result.Id] = repo.getVmguestFromVmguestModel(result)
+	}
+	return vmguests, nil
+}
+
+func (repo *VmguestRepository) getVmguestFromVmguestModel(vm *vmguestModel) *domain.Vmguest {
+	return &domain.Vmguest{Id: vm.Id, Name: vm.Name, State: vm.State}
 }
 
 func NewVmhostRepository(dbMap *gorp.DbMap, vmguestRepository *VmguestRepository) *VmhostRepository {

@@ -17,14 +17,14 @@ import (
 
 func setupRouter() *mux.Router {
 	ce := new(infrastructure.DefaultCommandExecutor)
-	vgr := interfaces.NewVmguestRepository(ce)
 	oh := interfaces.NewDefaultVmhostOperationsHandler(ce)
 
-	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
+	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-integrationtestdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 
+	vgr := interfaces.NewVmguestRepository(dbMap, ce)
 	vhr := interfaces.NewVmhostRepository(dbMap, vgr)
 
 	dbMap.DropTables()
