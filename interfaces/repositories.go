@@ -1,6 +1,7 @@
 package interfaces
 
 import (
+	"errors"
 	"fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
@@ -44,7 +45,10 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 	var arguments []string
 	var vmguests []*domain.Vmguest
 
-	vmguestsFromDb, _ := repo.getAllFromDb(vmhostDnsName)
+	vmguestsFromDb, err := repo.getAllFromDb(vmhostDnsName)
+	if err != nil {
+		return nil, fmt.Errorf("Error while trying to load vmguests for vmhost with DnsName %s from database cache", vmhostDnsName)
+	}
 	if len(vmguestsFromDb) > 0 {
 		for _, vmguestFromDb := range vmguestsFromDb {
 			vmguests = append(vmguests, vmguestFromDb)
@@ -120,6 +124,12 @@ func NewVmhostRepository(dbMap *gorp.DbMap, vmguestRepository *VmguestRepository
 
 func (repo *VmhostRepository) Store(vmhost *domain.Vmhost) error {
 	var vm *vmhostModel
+	if vmhost.Id == "" {
+		return errors.New("Cannot store vmhosts with an empty Id")
+	}
+	if vmhost.DnsName == "" {
+		return errors.New("Cannot store vmhosts with an empty DnsName")
+	}
 	vm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName}
 	return repo.dbMap.Insert(vm)
 }
@@ -146,7 +156,11 @@ func (repo *VmhostRepository) GetAll() (map[string]*domain.Vmhost, error) {
 	repo.dbMap.Select(&results, query)
 	for _, result := range results {
 		vmhost := repo.getVmhostFromVmhostModel(result)
-		vmhost.Vmguests, _ = repo.vmguestRepository.GetAll(vmhost.DnsName)
+		vmguests, err := repo.vmguestRepository.GetAll(vmhost.DnsName)
+		if err != nil {
+			return nil, fmt.Errorf("Error loading vmguests for vmhost (%+v)", err)
+		}
+		vmhost.Vmguests = vmguests
 		vmhosts[result.Id] = vmhost
 	}
 	return vmhosts, nil

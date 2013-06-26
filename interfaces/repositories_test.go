@@ -73,6 +73,28 @@ func TestVmhostRepositoryStore(t *testing.T) {
 	}
 }
 
+func TestVmhostRepositoryStoreFailsWithEmptyId(t *testing.T) {
+	vmhost, _ := domain.NewVmhost("", "vmhost1", nil)
+	repo := setupVmhostRepo()
+	repo.reset()
+	defer repo.reset()
+	err := repo.Store(vmhost)
+	if err == nil {
+		t.Errorf("Could store vmhost %+v in repo %+v although its Id was empty", vmhost, repo)
+	}
+}
+
+func TestVmhostRepositoryStoreFailsWithEmptyDnsName(t *testing.T) {
+	vmhost, _ := domain.NewVmhost("12345", "", nil)
+	repo := setupVmhostRepo()
+	repo.reset()
+	defer repo.reset()
+	err := repo.Store(vmhost)
+	if err == nil {
+		t.Errorf("Could store vmhost %+v in repo %+v although its DnsName was empty", vmhost, repo)
+	}
+}
+
 func TestVmhostRepositoryFindById(t *testing.T) {
 	vmhost, _ := domain.NewVmhost("12345", "vmhost1", nil)
 	repo := setupVmhostRepo()
