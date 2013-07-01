@@ -24,8 +24,9 @@ func setupRouter() *mux.Router {
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 
-	vgr := interfaces.NewVmguestRepository(dbMap, ce)
-	vhr := interfaces.NewVmhostRepository(dbMap, vgr)
+	vglr := interfaces.NewVmguestLiveRepository(ce)
+	vgcr := interfaces.NewVmguestCacheRepository(dbMap)
+	vhr := interfaces.NewVmhostRepository(dbMap, vglr, vgcr)
 
 	dbMap.DropTables()
 	dbMap.CreateTables()

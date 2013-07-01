@@ -19,8 +19,9 @@ func main() {
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
 
-	vgr := interfaces.NewVmguestRepository(dbMap, ce)
-	vhr := interfaces.NewVmhostRepository(dbMap, vgr)
+	vglr := interfaces.NewVmguestLiveRepository(ce)
+	vgcr := interfaces.NewVmguestCacheRepository(dbMap)
+	vhr := interfaces.NewVmhostRepository(dbMap, vglr, vgcr)
 	
 //	vmhost, _ := domain.NewVmhost("1", "localhost", nil)
 //	vhr.Store(vmhost)

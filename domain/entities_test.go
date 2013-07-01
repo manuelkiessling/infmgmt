@@ -9,13 +9,6 @@ func TestCreateVmguest(t *testing.T) {
 }
 
 func TestCreateVmhost(t *testing.T) {
-	vmguests := make([]*Vmguest, 0)
+	var vmguests map[string]*Vmguest
 	NewVmhost("12345", "kvmhost1", vmguests)
-}
-
-func TestAppendVmguestToVmhost(t *testing.T) {
-	vmguests := make([]*Vmguest, 0)
-	vmhost, _ := NewVmhost("12345", "kvmhost1", vmguests)
-	vmguest, _ := NewVmguest("67890", "virtual1", "running")
-	vmhost.Vmguests = append(vmhost.Vmguests, vmguest)
 }
