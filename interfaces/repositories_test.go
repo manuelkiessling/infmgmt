@@ -36,19 +36,23 @@ func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ..
 	return "", nil
 }
 
-func setupVmguestRepo() *VmguestRepository {
+func setupVmguestLiveRepo() VmguestRepository {
+	ce := new(MockVmguestRepositoryCommandExecutor)
+	return NewVmguestLiveRepository(ce)
+}
+
+func setupVmguestCacheRepo() VmguestRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	ce := new(MockVmguestRepositoryCommandExecutor)
-	return NewVmguestRepository(dbMap, ce)
+	return NewVmguestCacheRepository(dbMap)
 }
 
 func setupVmhostRepo() *VmhostRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	//dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	repo := NewVmhostRepository(dbMap, setupVmguestRepo())
+	repo := NewVmhostRepository(dbMap, setupVmguestLiveRepo(), setupVmguestCacheRepo())
 	return repo
 }
 
@@ -57,7 +61,7 @@ func (repo *VmhostRepository) reset() {
 	repo.dbMap.CreateTables()
 }
 
-func (repo *VmguestRepository) reset() {
+func (repo *VmguestCacheRepository) reset() {
 	repo.dbMap.DropTables()
 	repo.dbMap.CreateTables()
 }
@@ -119,27 +123,10 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 		t.Errorf("Repo %+v did not return the correct vmhost: %+v", newRepo, retrievedVmhost)
 		return
 	}
-	vmguest := retrievedVmhost.Vmguests[0]
+	vmguest := retrievedVmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
 	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" {
-		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests[0])
+		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
 		return
-	}
-}
-
-func TestVmguestRepositoryCachesToDb(t *testing.T) {
-	repo := setupVmguestRepo()
-	repo.reset()
-	vmguests, _ := repo.GetAll("vmhost1")
-	if numberOfCommandCalls == 0 {
-		t.Errorf("CommandExecutor was not called")
-	}
-	numberOfCommandCalls = 0
-	vmguests, _ = repo.GetAll("vmhost1")
-	if numberOfCommandCalls != 0 {
-		t.Errorf("Expected vmguests to be retrieved from db instead of command line")
-	}
-	if vmguests[0].Name != "virtual1" {
-		t.Errorf("Couldn't get vmguests")
 	}
 }
 

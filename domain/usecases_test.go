@@ -5,6 +5,8 @@ import (
 	"testing"
 )
 
+var vmguestsStoredInRepo []string
+
 type MockOperationsHandler struct {
 	Commands []string
 }
@@ -37,7 +39,7 @@ func (repo *MockVmhostRepository) Store(vmhost *Vmhost) error {
 func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
 	var vmhost *Vmhost
 	vmguests := make([]*Vmguest, 0)
-	vmhost = &Vmhost{id, "vmhost"+id, vmguests}
+	vmhost = &Vmhost{id, "vmhost" + id, vmguests}
 	return vmhost, nil
 }
 
@@ -47,6 +49,19 @@ func (repo *MockVmhostRepository) GetAll() (map[string]*Vmhost, error) {
 	vmhosts["1"] = &Vmhost{"1", "vmhost1", vmguests}
 	vmhosts["2"] = &Vmhost{"2", "vmhost2", vmguests}
 	return vmhosts, nil
+}
+
+func TestUpdateVmguestCache(t *testing.T) {
+	var expected []string
+	expected = append(expected, "1")
+	expected = append(expected, "2")
+	interactor := new(VmhostsInteractor)
+	interactor.UpdateVmguestCache() // muss für jeden vmhost einmal UpdateVmguestCache() aufrufen
+	if !reflect.DeepEqual(expected, updateVmguestCacheCalls) {
+	if allVmguestsWereStoredToRepo == false {
+		t.Errorf("Use case did not ")
+	}
+
 }
 
 func TestSetupVmguestTriggersTheRightActions(t *testing.T) {

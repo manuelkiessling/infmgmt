@@ -11,7 +11,7 @@ package domain
 */
 
 import (
-	_ "fmt"
+	"fmt"
 )
 
 type VmhostRepository interface {
@@ -48,10 +48,16 @@ type VmhostsInteractor struct {
 
 func (interactor *VmhostsInteractor) GetList() (map[string]*VmhostsListEntry, error) {
 	var list map[string]*VmhostsListEntry
-	vmhosts, nil := interactor.VmhostRepository.GetAll()
+	vmhosts, err := interactor.VmhostRepository.GetAll()
+	if err != nil {
+		return nil, fmt.Errorf("Could not retrieve list of vmhosts from repository")
+	}
 	list = make(map[string]*VmhostsListEntry, len(vmhosts))
 	for _, vmhost := range vmhosts {
-		vmguestList, _ := interactor.GetVmguestsList(vmhost.Id)
+		vmguestList, err := interactor.GetVmguestsList(vmhost.Id)
+		if err != nil {
+			return nil, fmt.Errorf("Error while trying to retrieve list of vmguests for vmhost %+v from repository", vmhost)
+		}
 		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName, vmguestList}
 	}
 	return list, nil
@@ -59,7 +65,10 @@ func (interactor *VmhostsInteractor) GetList() (map[string]*VmhostsListEntry, er
 
 func (interactor *VmhostsInteractor) GetVmguestsList(vmhostId string) (map[string]*VmguestsListEntry, error) {
 	var list map[string]*VmguestsListEntry
-	vmhost, nil := interactor.VmhostRepository.FindById(vmhostId)
+	vmhost, err := interactor.VmhostRepository.FindById(vmhostId)
+	if err != nil {
+		return nil, fmt.Errorf("Error while trying to retrieve vmhost with Id %s from repository", vmhostId)
+	}
 	list = make(map[string]*VmguestsListEntry, len(vmhost.Vmguests))
 	for _, vmguest := range vmhost.Vmguests {
 		list[vmguest.Id] = &VmguestsListEntry{vmguest.Id, vmguest.Name, vmguest.State}

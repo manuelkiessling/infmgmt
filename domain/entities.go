@@ -14,7 +14,7 @@ import (
 type Vmhost struct {
 	Id      string
 	DnsName string
-	Vmguests []*Vmguest
+	Vmguests map[string]*Vmguest
 }
 
 type Vmguest struct {
@@ -23,7 +23,7 @@ type Vmguest struct {
 	State   string
 }
 
-func NewVmhost(id string, dnsName string, vmguests []*Vmguest) (newVmhost *Vmhost, err error) {
+func NewVmhost(id string, dnsName string, vmguests map[string]*Vmguest) (newVmhost *Vmhost, err error) {
 	vmhost := &Vmhost{id, dnsName, vmguests}
 	return vmhost, nil
 }

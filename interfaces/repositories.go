@@ -10,9 +10,17 @@ import (
 	"strings"
 )
 
-type VmguestRepository struct {
-	dbMap           *gorp.DbMap
+type VmguestRepository interface {
+	Store(vmhostDnsName string, vmguest *domain.Vmguest) error
+	GetAll(vmhostDnsName string) (map[string]*domain.Vmguest, error)
+}
+
+type VmguestLiveRepository struct {
 	commandExecutor CommandExecutor
+}
+
+type VmguestCacheRepository struct {
+	dbMap *gorp.DbMap
 }
 
 type vmguestModel struct {
@@ -23,8 +31,9 @@ type vmguestModel struct {
 }
 
 type VmhostRepository struct {
-	dbMap             *gorp.DbMap
-	vmguestRepository *VmguestRepository
+	dbMap                  *gorp.DbMap
+	vmguestLiveRepository  VmguestRepository
+	vmguestCacheRepository VmguestRepository
 }
 
 type vmhostModel struct {
@@ -32,29 +41,26 @@ type vmhostModel struct {
 	DnsName string
 }
 
-func NewVmguestRepository(dbMap *gorp.DbMap, commandExecutor CommandExecutor) *VmguestRepository {
-	dbMap.AddTableWithName(vmguestModel{}, "vmguests").SetKeys(false, "Id")
-	return &VmguestRepository{dbMap, commandExecutor}
+func NewVmguestLiveRepository(commandExecutor CommandExecutor) VmguestRepository {
+	return &VmguestLiveRepository{commandExecutor}
 }
 
-func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, error) {
+func NewVmguestCacheRepository(dbMap *gorp.DbMap) VmguestRepository {
+	dbMap.AddTableWithName(vmguestModel{}, "vmguests").SetKeys(false, "Id")
+	return &VmguestCacheRepository{dbMap}
+}
+
+func (repo *VmguestLiveRepository) Store(vmhostDnsName string, vmguest *domain.Vmguest) error {
+	return fmt.Errorf("Live Vmguest Repo cannot store")
+}
+
+func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*domain.Vmguest, error) {
 	var output string
 	var machineCount int
 	var id, name, state string
 	var command string
 	var arguments []string
-	var vmguests []*domain.Vmguest
-
-	vmguestsFromDb, err := repo.getAllFromDb(vmhostDnsName)
-	if err != nil {
-		return nil, fmt.Errorf("Error while trying to load vmguests for vmhost with DnsName %s from database cache", vmhostDnsName)
-	}
-	if len(vmguestsFromDb) > 0 {
-		for _, vmguestFromDb := range vmguestsFromDb {
-			vmguests = append(vmguests, vmguestFromDb)
-		}
-		return vmguests, nil
-	}
+	var vmguests map[string]*domain.Vmguest
 
 	command = "ssh"
 	arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
@@ -86,19 +92,18 @@ func (repo *VmguestRepository) GetAll(vmhostDnsName string) ([]*domain.Vmguest, 
 		id = strings.TrimSpace(output)
 
 		vmguest, _ := domain.NewVmguest(id, name, state)
-		vmguests = append(vmguests, vmguest)
-		repo.storeToDb(vmhostDnsName, vmguest)
+		vmguests[id] = vmguest
 	}
 	return vmguests, nil
 }
 
-func (repo *VmguestRepository) storeToDb(vmhostDnsName string, vmguest *domain.Vmguest) error {
+func (repo *VmguestCacheRepository) Store(vmhostDnsName string, vmguest *domain.Vmguest) error {
 	var vm *vmguestModel
 	vm = &vmguestModel{Id: vmguest.Id, VmhostDnsName: vmhostDnsName, Name: vmguest.Name, State: vmguest.State}
 	return repo.dbMap.Insert(vm)
 }
 
-func (repo *VmguestRepository) getAllFromDb(vmhostDnsName string) (map[string]*domain.Vmguest, error) {
+func (repo *VmguestCacheRepository) GetAll(vmhostDnsName string) (map[string]*domain.Vmguest, error) {
 	var results []*vmguestModel
 	vmguests := make(map[string]*domain.Vmguest)
 	query := "SELECT * FROM vmguests WHERE VmhostDnsName = ?"
@@ -109,16 +114,17 @@ func (repo *VmguestRepository) getAllFromDb(vmhostDnsName string) (map[string]*d
 	return vmguests, nil
 }
 
-func (repo *VmguestRepository) getVmguestFromVmguestModel(vm *vmguestModel) *domain.Vmguest {
+func (repo *VmguestCacheRepository) getVmguestFromVmguestModel(vm *vmguestModel) *domain.Vmguest {
 	return &domain.Vmguest{Id: vm.Id, Name: vm.Name, State: vm.State}
 }
 
-func NewVmhostRepository(dbMap *gorp.DbMap, vmguestRepository *VmguestRepository) *VmhostRepository {
+func NewVmhostRepository(dbMap *gorp.DbMap, vmguestLiveRepository VmguestRepository, vmguestCacheRepository VmguestRepository) *VmhostRepository {
 	// SetKeys(false) means we do have a primary key ("Id"), but we set it ourselves (no autoincrement)
 	dbMap.AddTableWithName(vmhostModel{}, "vmhosts").SetKeys(false, "Id")
 	repo := new(VmhostRepository)
 	repo.dbMap = dbMap
-	repo.vmguestRepository = vmguestRepository
+	repo.vmguestLiveRepository = vmguestLiveRepository
+	repo.vmguestCacheRepository = vmguestCacheRepository
 	return repo
 }
 
@@ -141,7 +147,7 @@ func (repo *VmhostRepository) FindById(id string) (*domain.Vmhost, error) {
 	if obj != nil {
 		vm := obj.(*vmhostModel)
 		vmhost = repo.getVmhostFromVmhostModel(vm)
-		vmhost.Vmguests, _ = repo.vmguestRepository.GetAll(vmhost.DnsName)
+		vmhost.Vmguests, _ = repo.vmguestCacheRepository.GetAll(vmhost.DnsName)
 	} else {
 		vmhost = nil
 		err = fmt.Errorf("No vmhost with id %v in repository", id)
@@ -156,7 +162,7 @@ func (repo *VmhostRepository) GetAll() (map[string]*domain.Vmhost, error) {
 	repo.dbMap.Select(&results, query)
 	for _, result := range results {
 		vmhost := repo.getVmhostFromVmhostModel(result)
-		vmguests, err := repo.vmguestRepository.GetAll(vmhost.DnsName)
+		vmguests, err := repo.vmguestCacheRepository.GetAll(vmhost.DnsName)
 		if err != nil {
 			return nil, fmt.Errorf("Error loading vmguests for vmhost (%+v)", err)
 		}
