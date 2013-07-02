@@ -43,13 +43,22 @@ func setupRouter() *mux.Router {
 }
 
 func TestGetVmhosts(t *testing.T) {
+	updateCacheReq, err := http.NewRequest("POST", "http://example.com/cacheupdate", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	req, err := http.NewRequest("GET", "http://example.com/vmhosts", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rec := httptest.NewRecorder()
 	router := setupRouter()
+
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, updateCacheReq)
+
+	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
 	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\",\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}}}"
@@ -59,7 +68,50 @@ func TestGetVmhosts(t *testing.T) {
 	}
 }
 
+func TestGetVmhostsFromEmptyCache(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://example.com/vmhosts", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	rec := httptest.NewRecorder()
+	router := setupRouter()
+	router.ServeHTTP(rec, req)
+
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\",\"Vmguests\":{}}}"
+
+	if expected != rec.Body.String() {
+		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
+	}
+}
+
 func TestGetVmguests(t *testing.T) {
+	updateCacheReq, err := http.NewRequest("POST", "http://example.com/cacheupdate", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	req, err := http.NewRequest("GET", "http://example.com/vmhosts/1/vmguests", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router := setupRouter()
+
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, updateCacheReq)
+
+	rec = httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}"
+
+	if expected != rec.Body.String() {
+		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
+	}
+}
+
+func TestGetVmguestsFromEmptyCache(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://example.com/vmhosts/1/vmguests", nil)
 	if err != nil {
 		log.Fatal(err)
@@ -69,7 +121,7 @@ func TestGetVmguests(t *testing.T) {
 	router := setupRouter()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}"
+	expected := "{}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())

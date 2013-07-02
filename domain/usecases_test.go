@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var vmguestsStoredInRepo []string
+var vmhostRepositoryUpdateCacheWasCalled bool
 
 type MockOperationsHandler struct {
 	Commands []string
@@ -36,6 +36,10 @@ func (repo *MockVmhostRepository) Store(vmhost *Vmhost) error {
 	return nil
 }
 
+func (repo *MockVmhostRepository) UpdateCache() {
+	vmhostRepositoryUpdateCacheWasCalled = true
+}
+
 func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
 	var vmhost *Vmhost
 	var vmguests map[string]*Vmguest
@@ -51,17 +55,18 @@ func (repo *MockVmhostRepository) GetAll() (map[string]*Vmhost, error) {
 	return vmhosts, nil
 }
 
-//func TestUpdateVmguestCache(t *testing.T) {
-//	var expected []string
-//	expected = append(expected, "1")
-//	expected = append(expected, "2")
-//	interactor := new(VmhostsInteractor)
-//	interactor.UpdateVmguestCache() // muss für jeden vmhost einmal UpdateVmguestCache() aufrufen
-//	if !reflect.DeepEqual(expected, updateVmguestCacheCalls) {
-//	if allVmguestsWereStoredToRepo == false {
-//		t.Errorf("Use case did not ")
-//	}
-//}
+func TestUpdateCache(t *testing.T) {
+	oh := new(MockOperationsHandler)
+
+	interactor := new(VmhostsInteractor)
+	interactor.VmhostOperationsHandler = oh
+	interactor.VmhostRepository = new(MockVmhostRepository)
+
+	interactor.UpdateCache()
+	if vmhostRepositoryUpdateCacheWasCalled == false {
+		t.Errorf("interactor.UpdateCache did not call repo's UpdateCache")
+	}
+}
 
 func TestSetupVmguestTriggersTheRightActions(t *testing.T) {
 	expectedCommands := make([]string, 1)

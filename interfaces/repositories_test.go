@@ -5,8 +5,8 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
 	_ "github.com/mattn/go-sqlite3"
-	 "log"
-	 "os"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -45,7 +45,10 @@ func setupVmguestCacheRepo() VmguestRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	return NewVmguestCacheRepository(dbMap)
+	repo := NewVmguestCacheRepository(dbMap)
+	dbMap.DropTables()
+	dbMap.CreateTables()
+	return repo
 }
 
 func setupVmhostRepo() *VmhostRepository {
@@ -57,11 +60,6 @@ func setupVmhostRepo() *VmhostRepository {
 }
 
 func (repo *VmhostRepository) reset() {
-	repo.dbMap.DropTables()
-	repo.dbMap.CreateTables()
-}
-
-func (repo *VmguestCacheRepository) reset() {
 	repo.dbMap.DropTables()
 	repo.dbMap.CreateTables()
 }
@@ -123,11 +121,11 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 		t.Errorf("Repo %+v did not return the correct vmhost: %+v", newRepo, retrievedVmhost)
 		return
 	}
-	vmguest := retrievedVmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
-	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" {
-		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
-		return
-	}
+	//vmguest := retrievedVmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
+	//if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" {
+	//	t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", newRepo, retrievedVmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
+	//	return
+	//}
 }
 
 func TestVmhostRepositoryGetAll(t *testing.T) {
@@ -142,5 +140,28 @@ func TestVmhostRepositoryGetAll(t *testing.T) {
 	vmhosts, _ := repo.GetAll()
 	if vmhosts[vmhost.Id].DnsName != "vmhost9" {
 		t.Errorf("DnsName of retrieved vmhost %v (%+v) did not match DnsName of stored vmhost %+v", vmhost.Id, vmhosts[vmhost.Id], vmhost)
+	}
+}
+
+func TestVmhostRepositoryUpdateCache(t *testing.T) {
+	repo := setupVmhostRepo()
+	repo.reset()
+	defer repo.reset()
+
+	vmhost, _ := domain.NewVmhost("12345", "vmhost1", nil)
+	repo.Store(vmhost)
+	vmhost, _ = repo.FindById("12345")
+
+	if len(vmhost.Vmguests) != 0 {
+		t.Errorf("Should be empty: %+v", vmhost.Vmguests)
+	}
+
+	repo.UpdateCache()
+
+	vmhost, _ = repo.FindById("12345")
+	vmguest := vmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
+	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" {
+		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", repo, vmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
+		return
 	}
 }

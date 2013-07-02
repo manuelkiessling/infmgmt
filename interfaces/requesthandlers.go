@@ -35,6 +35,11 @@ func NewRouter(requestHandler *RequestHandler) *mux.Router {
 		requestHandler.HandleCreateVmguestRequest(res, req)
 	}).Methods("POST")
 
+	// POST /cacherefresh triggers update of the vmguest cache
+	router.HandleFunc("/cacheupdate", func(res http.ResponseWriter, req *http.Request) {
+		requestHandler.HandleUpdateCache(res, req)
+	}).Methods("POST")
+
 	return router
 }
 
@@ -68,4 +73,9 @@ func (rh *RequestHandler) HandleCreateVmguestRequest(res http.ResponseWriter, re
 	} else {
 		fmt.Fprintf(res, "OK")
 	}
+}
+
+func (rh *RequestHandler) HandleUpdateCache(res http.ResponseWriter, req *http.Request) {
+	rh.vmhostsInteractor.UpdateCache()
+	fmt.Fprintf(res, "OK")
 }

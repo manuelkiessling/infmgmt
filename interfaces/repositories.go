@@ -62,6 +62,8 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 	var arguments []string
 	var vmguests map[string]*domain.Vmguest
 
+	vmguests = make(map[string]*domain.Vmguest)
+
 	command = "ssh"
 	arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
 	arguments = append(arguments, "root@"+vmhostDnsName)
@@ -170,6 +172,22 @@ func (repo *VmhostRepository) GetAll() (map[string]*domain.Vmhost, error) {
 		vmhosts[result.Id] = vmhost
 	}
 	return vmhosts, nil
+}
+
+func (repo *VmhostRepository) UpdateCache() {
+	vmhosts, err := repo.GetAll()
+	if err != nil {
+		fmt.Errorf("Error getting vmhosts for UpdateCache")
+	}
+	for _, vmhost := range vmhosts {
+		vmguests, err := repo.vmguestLiveRepository.GetAll(vmhost.DnsName)
+		if err != nil {
+			fmt.Errorf("Error getting vmguests for UpdateCache")
+		}
+		for _, vmguest := range vmguests {
+			repo.vmguestCacheRepository.Store(vmhost.DnsName, vmguest)
+		}
+	}
 }
 
 func (repo *VmhostRepository) getVmhostFromVmhostModel(vm *vmhostModel) *domain.Vmhost {
