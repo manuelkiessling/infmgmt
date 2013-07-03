@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	_ "fmt"
+	"fmt"
 	"github.com/streadway/simpleuuid"
 	"time"
 )
@@ -17,7 +17,8 @@ type Command struct {
 
 type procedure struct {
 	Id              string
-	Status          int
+	started         bool
+	finished        bool
 	commandExecutor CommandExecutor
 	commands        []*Command
 }
@@ -26,16 +27,21 @@ func (p *procedure) Add(command *Command) {
 	p.commands = append(p.commands, command)
 }
 
-func (p *procedure) Start() chan int {
+func (p *procedure) Start() (chan int, error) {
 	c := make(chan int)
+	if p.started {
+		return c, fmt.Errorf("This procedure has already been started")
+	}
+	p.started = true
+	p.finished = false
 	go func() {
 		for _, command := range p.commands {
 			p.commandExecutor.Run(command.Name, command.Arguments...)
 		}
-		p.Status = 1
+		p.finished = true
 		c <- 1
 	}()
-	return c
+	return c, nil
 }
 
 type DefaultVmhostOperationsHandler struct {
@@ -74,10 +80,10 @@ func (oh *DefaultVmhostOperationsHandler) AddCommandsCreateVirtualmachine(proced
 	return nil
 }
 
-func (oh *DefaultVmhostOperationsHandler) ExecuteProcedure(procedureId string) chan int {
+func (oh *DefaultVmhostOperationsHandler) ExecuteProcedure(procedureId string) (chan int, error) {
 	return oh.procedures[procedureId].Start()
 }
 
-func (oh *DefaultVmhostOperationsHandler) GetProcedureStatus(procedureId string) int {
-	return oh.procedures[procedureId].Status
+func (oh *DefaultVmhostOperationsHandler) IsProcedureFinished(procedureId string) bool {
+	return oh.procedures[procedureId].finished
 }

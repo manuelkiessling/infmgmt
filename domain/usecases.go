@@ -24,8 +24,8 @@ type VmhostRepository interface {
 type VmhostOperationsHandler interface {
 	InitializeProcedure() string
 	AddCommandsCreateVirtualmachine(procedureId string, vmhostDnsName string, vmguestName string) error
-	ExecuteProcedure(procedureId string) chan int
-	GetProcedureStatus(procedureId string) int
+	ExecuteProcedure(procedureId string) (chan int, error)
+	IsProcedureFinished(procedureId string) bool
 	//	SetIpAddressInGuestimage(vmhostDnsName string, vmguestName string, ipAddress string) error
 	//	SetHostnameInGuestimage(vmhostDnsName string, vmguestName string, hostname string) error
 }

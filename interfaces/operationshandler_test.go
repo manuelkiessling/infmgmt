@@ -24,11 +24,11 @@ func TestCreateGuestImageFromBaseImage(t *testing.T) {
 	oh := NewDefaultVmhostOperationsHandler(commandExecutor)
 	procedureId := oh.InitializeProcedure()
 	oh.AddCommandsCreateVirtualmachine(procedureId, "kvmhost1", "virtual1")
-	c := oh.ExecuteProcedure(procedureId)
-	status := 0
-	for status == 0 {
+	c, _ := oh.ExecuteProcedure(procedureId)
+	finished := false
+	for !finished {
 		<-c
-		status = oh.GetProcedureStatus(procedureId)
+		finished = oh.IsProcedureFinished(procedureId)
 	}
 	if commandExecutor.Commandlines[0] != expected0 {
 		t.Errorf("OperationsHandler created commandline %+s, expected %+s", commandExecutor.Commandlines[0], expected0)
