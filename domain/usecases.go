@@ -82,6 +82,12 @@ func (interactor *VmhostsInteractor) CreateVmguest(vmhostId string, vmguestName 
 	if err == nil {
 		pId := interactor.VmhostOperationsHandler.InitializeProcedure()
 		interactor.VmhostOperationsHandler.AddCommandsCreateVirtualmachine(pId, vmhost.DnsName, vmguestName)
+		// TODO: create vmguest entity as soon as all procedures are finished,
+		//       add it to the vmguest cache (or get this by running the vmguest live repo?)
+		//       maybe we should pass the channel into each ExecuteProcedure, this way it's
+		//       simple to check if all procedures are finished?
+		//       also, makes it simple to call procedures in order, not in parallel
+		//       just give the channel a length of 1, as soon as one proc fills it, the next can start
 		interactor.VmhostOperationsHandler.ExecuteProcedure(pId)
 	} else {
 		return "", err
