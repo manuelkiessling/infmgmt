@@ -20,13 +20,13 @@ func (oh *MockOperationsHandler) AddCommandsCreateVirtualmachine(procedureId str
 	return nil
 }
 
-func (oh *MockOperationsHandler) ExecuteProcedure(procedureId string) chan int {
+func (oh *MockOperationsHandler) ExecuteProcedure(procedureId string) (chan int, error) {
 	c := make(chan int)
-	return c
+	return c, nil
 }
 
-func (oh *MockOperationsHandler) GetProcedureStatus(procedureId string) int {
-	return 1
+func (oh *MockOperationsHandler)	IsProcedureFinished(procedureId string) bool {
+	return true
 }
 
 type MockVmhostRepository struct {
