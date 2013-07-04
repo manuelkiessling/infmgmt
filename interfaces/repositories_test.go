@@ -165,3 +165,22 @@ func TestVmhostRepositoryUpdateCache(t *testing.T) {
 		return
 	}
 }
+
+func TestVmhostRepositoryUpdateCacheIsLocked(t *testing.T) {
+	repo := setupVmhostRepo()
+	repo.reset()
+	defer repo.reset()
+
+	vmhost, _ := domain.NewVmhost("12345", "vmhost1", nil)
+	repo.Store(vmhost)
+
+	err := repo.UpdateCache()
+	if err != nil {
+		t.Errorf("Could not run update cache although no other update cache process is running")
+	}
+	err = repo.UpdateCache()
+	if err == nil {
+		t.Errorf("Expected update cache to fail because another process is still running")	
+	}
+
+}
