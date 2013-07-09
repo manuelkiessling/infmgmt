@@ -18,7 +18,7 @@ type VmhostRepository interface {
 	Store(vmhost *Vmhost) error
 	FindById(id string) (*Vmhost, error)
 	GetAll() (map[string]*Vmhost, error)
-	UpdateCache()
+	UpdateCache() error
 }
 
 type VmhostOperationsHandler interface {
@@ -95,6 +95,6 @@ func (interactor *VmhostsInteractor) CreateVmguest(vmhostId string, vmguestName 
 	return "", nil
 }
 
-func (interactor *VmhostsInteractor) UpdateCache() {
-	interactor.VmhostRepository.UpdateCache()
+func (interactor *VmhostsInteractor) UpdateCache() error {
+	return interactor.VmhostRepository.UpdateCache()
 }

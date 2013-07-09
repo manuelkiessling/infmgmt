@@ -23,10 +23,11 @@ func main() {
 	vgcr := interfaces.NewVmguestCacheRepository(dbMap)
 	vhr := interfaces.NewVmhostRepository(dbMap, vglr, vgcr)
 	
-//	vmhost, _ := domain.NewVmhost("1", "localhost", nil)
-//	vhr.Store(vmhost)
-//	vmhost, _ = vhr.FindById("1")
-//	log.Printf("Guests: %+v\n", vmhost.Vmguests[0])
+	dbMap.DropTables()
+	dbMap.CreateTables()
+
+	vmhost, _ := domain.NewVmhost("1", "localhost", nil)
+	vhr.Store(vmhost)
 
 	mi := new(domain.VmhostsInteractor)
 	mi.VmhostRepository = vhr

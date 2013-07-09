@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	_ "fmt"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
-	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
 	"github.com/manuelkiessling/infmgmt-backend/interfaces"
 	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
@@ -13,10 +12,35 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"strings"
 )
 
+var numberOfCommandCalls int
+
+type MockVmguestRepositoryCommandExecutor struct {
+	Commandlines []string
+}
+
+func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
+	numberOfCommandCalls++
+	commandline := command + " " + strings.Join(arguments, " ")
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
+		return "1", nil
+	}
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f3" {
+		return "virtual1", nil
+	}
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f4-" {
+		return "running", nil
+	}
+	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44" {
+		return "a0f39677-afda-f5bb-20b9-c5d8e3e06edf", nil
+	}
+	return "", nil
+}
+
 func setupRouter() *mux.Router {
-	ce := new(infrastructure.DefaultCommandExecutor)
+	ce := new(MockVmguestRepositoryCommandExecutor)
 	oh := interfaces.NewDefaultVmhostOperationsHandler(ce)
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-integrationtestdb.sqlite")
@@ -30,7 +54,7 @@ func setupRouter() *mux.Router {
 
 	dbMap.DropTables()
 	dbMap.CreateTables()
-	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "localhost")
+	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "vmhost1")
 
 	mi := new(domain.VmhostsInteractor)
 	mi.VmhostRepository = vhr
@@ -61,7 +85,7 @@ func TestGetVmhosts(t *testing.T) {
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\",\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\"}}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -78,7 +102,7 @@ func TestGetVmhostsFromEmptyCache(t *testing.T) {
 	router := setupRouter()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"localhost\",\"Vmguests\":{}}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"Vmguests\":{}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -104,7 +128,7 @@ func TestGetVmguests(t *testing.T) {
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"wordpress\",\"State\":\"shut off\"}}"
+	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\"}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
