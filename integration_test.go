@@ -3,16 +3,17 @@ package main
 import (
 	"database/sql"
 	_ "fmt"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
-	"github.com/manuelkiessling/infmgmt-backend/interfaces"
 	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
+	"github.com/manuelkiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt-backend/interfaces"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"testing"
 	"strings"
+	"testing"
+	"time"
 )
 
 var numberOfCommandCalls int
@@ -46,7 +47,7 @@ func setupRouter() *mux.Router {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-integrationtestdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	dbMap.TraceOff()
+//	dbMap.TraceOff()
 
 	vglr := interfaces.NewVmguestLiveRepository(ce)
 	vgcr := interfaces.NewVmguestCacheRepository(dbMap)
@@ -81,6 +82,8 @@ func TestGetVmhosts(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
+
+	time.Sleep(1000)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -125,6 +128,8 @@ func TestGetVmguests(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
+	time.Sleep(1000)
+	
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
