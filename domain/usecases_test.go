@@ -36,8 +36,9 @@ func (repo *MockVmhostRepository) Store(vmhost *Vmhost) error {
 	return nil
 }
 
-func (repo *MockVmhostRepository) UpdateCache() {
+func (repo *MockVmhostRepository) UpdateCache() error {
 	vmhostRepositoryUpdateCacheWasCalled = true
+	return nil
 }
 
 func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
