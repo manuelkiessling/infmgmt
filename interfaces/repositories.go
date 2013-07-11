@@ -66,32 +66,30 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 
 	vmguests = make(map[string]*domain.Vmguest)
 
-	command = "ssh"
-	arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
-	arguments = append(arguments, "root@"+vmhostDnsName)
-	arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l", " ")...)
+	command = "/opt/infmgmt/bin/get_number_of_vmguests.sh"
+	arguments = append(arguments, vmhostDnsName)
 	output, _ = repo.commandExecutor.Run(command, arguments...)
 	machineCount, _ = strconv.Atoi(strings.TrimSpace(output))
 
 	for i := 0; i < machineCount; i++ {
+		command = "/opt/infmgmt/bin/get_name_of_vmguest.sh"
 		arguments = nil
-		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
-		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f3", " ")...)
+		arguments = append(arguments, vmhostDnsName)
+		arguments = append(arguments, strconv.Itoa(i))
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		name = strings.TrimSpace(output)
 
+		command = "/opt/infmgmt/bin/get_state_of_vmguest.sh"
 		arguments = nil
-		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
-		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, strings.Split("virsh list --all | tail --lines=+"+strconv.Itoa(3+i)+" | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f4-", " ")...)
+		arguments = append(arguments, vmhostDnsName)
+		arguments = append(arguments, strconv.Itoa(i))
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		state = strings.TrimSpace(output)
 
+		command = "/opt/infmgmt/bin/get_uuid_of_vmguest.sh"
 		arguments = nil
-		arguments = append(arguments, "-i /home/manuel.kiessling/.ssh/infmgmt.id_rsa")
-		arguments = append(arguments, "root@"+vmhostDnsName)
-		arguments = append(arguments, strings.Split("virsh dumpxml "+name+" | grep uuid | cut --bytes=9-44", " ")...)
+		arguments = append(arguments, vmhostDnsName)
+		arguments = append(arguments, name)
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		id = strings.TrimSpace(output)
 

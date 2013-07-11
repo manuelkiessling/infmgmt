@@ -6,48 +6,24 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
 	"github.com/manuelkiessling/infmgmt-backend/interfaces"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 	"time"
 )
 
-var numberOfCommandCalls int
-
-type MockVmguestRepositoryCommandExecutor struct {
-	Commandlines []string
-}
-
-func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	numberOfCommandCalls++
-	commandline := command + " " + strings.Join(arguments, " ")
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
-		return "1", nil
-	}
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f3" {
-		return "virtual1", nil
-	}
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f4-" {
-		return "running", nil
-	}
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44" {
-		return "a0f39677-afda-f5bb-20b9-c5d8e3e06edf", nil
-	}
-	return "", nil
-}
-
 func setupRouter() *mux.Router {
-	ce := new(MockVmguestRepositoryCommandExecutor)
+	ce := new(infrastructure.MockCommandExecutor)
 	oh := interfaces.NewDefaultVmhostOperationsHandler(ce)
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-integrationtestdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-//	dbMap.TraceOff()
+	//dbMap.TraceOff()
 
 	vglr := interfaces.NewVmguestLiveRepository(ce)
 	vgcr := interfaces.NewVmguestCacheRepository(dbMap)
@@ -129,7 +105,7 @@ func TestGetVmguests(t *testing.T) {
 	router.ServeHTTP(rec, updateCacheReq)
 
 	time.Sleep(1000)
-	
+
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 

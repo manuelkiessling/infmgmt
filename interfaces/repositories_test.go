@@ -4,40 +4,16 @@ import (
 	"database/sql"
 	"github.com/coopernurse/gorp"
 	"github.com/manuelkiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"testing"
 )
 
-var numberOfCommandCalls int
-
-type MockVmguestRepositoryCommandExecutor struct {
-	Commandlines []string
-}
-
-func (ce *MockVmguestRepositoryCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
-	numberOfCommandCalls++
-	commandline := command + " " + strings.Join(arguments, " ")
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=-1 | wc -l" {
-		return "1", nil
-	}
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f3" {
-		return "virtual1", nil
-	}
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh list --all | tail --lines=+3 | head --lines=1 | sed 's/ \\+/ /g' | cut -d' ' -f4-" {
-		return "running", nil
-	}
-	if commandline == "ssh -i /home/manuel.kiessling/.ssh/infmgmt.id_rsa root@vmhost1 virsh dumpxml virtual1 | grep uuid | cut --bytes=9-44" {
-		return "a0f39677-afda-f5bb-20b9-c5d8e3e06edf", nil
-	}
-	return "", nil
-}
-
 func setupVmguestLiveRepo() VmguestRepository {
-	ce := new(MockVmguestRepositoryCommandExecutor)
+	ce := new(infrastructure.MockCommandExecutor)
 	return NewVmguestLiveRepository(ce)
 }
 
@@ -45,6 +21,7 @@ func setupVmguestCacheRepo() VmguestRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOff()
 	repo := NewVmguestCacheRepository(dbMap)
 	dbMap.DropTables()
 	dbMap.CreateTables()
@@ -54,7 +31,8 @@ func setupVmguestCacheRepo() VmguestRepository {
 func setupVmhostRepo() *VmhostRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	//dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOff()
 	repo := NewVmhostRepository(dbMap, setupVmguestLiveRepo(), setupVmguestCacheRepo())
 	return repo
 }
