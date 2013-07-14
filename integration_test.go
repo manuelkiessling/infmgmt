@@ -44,12 +44,12 @@ func setupRouter() *mux.Router {
 }
 
 func TestGetVmhosts(t *testing.T) {
-	updateCacheReq, err := http.NewRequest("POST", "http://example.com/cacheupdate", nil)
+	updateCacheReq, err := http.NewRequest("POST", "http://example.com/webservice/cacheupdate", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req, err := http.NewRequest("GET", "http://example.com/vmhosts", nil)
+	req, err := http.NewRequest("GET", "http://example.com/webservice/vmhosts", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestGetVmhosts(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
-	time.Sleep(1000)
+	time.Sleep(2000)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -72,7 +72,7 @@ func TestGetVmhosts(t *testing.T) {
 }
 
 func TestGetVmhostsFromEmptyCache(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://example.com/vmhosts", nil)
+	req, err := http.NewRequest("GET", "http://example.com/webservice/vmhosts", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,12 +89,12 @@ func TestGetVmhostsFromEmptyCache(t *testing.T) {
 }
 
 func TestGetVmguests(t *testing.T) {
-	updateCacheReq, err := http.NewRequest("POST", "http://example.com/cacheupdate", nil)
+	updateCacheReq, err := http.NewRequest("POST", "http://example.com/webservice/cacheupdate", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	req, err := http.NewRequest("GET", "http://example.com/vmhosts/1/vmguests", nil)
+	req, err := http.NewRequest("GET", "http://example.com/webservice/vmhosts/1/vmguests", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func TestGetVmguests(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
-	time.Sleep(1000)
+	time.Sleep(2000)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
@@ -117,7 +117,7 @@ func TestGetVmguests(t *testing.T) {
 }
 
 func TestGetVmguestsFromEmptyCache(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://example.com/vmhosts/1/vmguests", nil)
+	req, err := http.NewRequest("GET", "http://example.com/webservice/vmhosts/1/vmguests", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,7 +135,7 @@ func TestGetVmguestsFromEmptyCache(t *testing.T) {
 
 func TestSetupWorkingForVirtualMachine(t *testing.T) {
 	return
-	req, err := http.NewRequest("POST", "http://example.com/vmhosts/1/vmguests", nil)
+	req, err := http.NewRequest("POST", "http://example.com/webservice/vmhosts/1/vmguests", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

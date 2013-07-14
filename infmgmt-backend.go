@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	ce := new(infrastructure.DefaultCommandExecutor)
+	ce := new(infrastructure.MockCommandExecutor)
 	oh := interfaces.NewDefaultVmhostOperationsHandler(ce)
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-productiondb.sqlite")
@@ -26,7 +26,7 @@ func main() {
 	dbMap.DropTables()
 	dbMap.CreateTables()
 
-	vmhost, _ := domain.NewVmhost("1", "localhost", nil)
+	vmhost, _ := domain.NewVmhost("1", "vmhost1", nil)
 	vhr.Store(vmhost)
 
 	mi := new(domain.VmhostsInteractor)
@@ -38,5 +38,6 @@ func main() {
 	r := interfaces.NewRouter(rh)
 
 	http.Handle("/", r)
+	//http.Handle("/app/", http.StripPrefix("/app/", ))
 	http.ListenAndServe(":8080", nil)
 }

@@ -66,27 +66,27 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 
 	vmguests = make(map[string]*domain.Vmguest)
 
-	command = "/opt/infmgmt/bin/get_number_of_vmguests.sh"
+	command = "/opt/infmgmt/bin/get_number_of_vmguests"
 	arguments = append(arguments, vmhostDnsName)
 	output, _ = repo.commandExecutor.Run(command, arguments...)
 	machineCount, _ = strconv.Atoi(strings.TrimSpace(output))
 
 	for i := 0; i < machineCount; i++ {
-		command = "/opt/infmgmt/bin/get_name_of_vmguest.sh"
+		command = "/opt/infmgmt/bin/get_name_of_vmguest"
 		arguments = nil
 		arguments = append(arguments, vmhostDnsName)
 		arguments = append(arguments, strconv.Itoa(i))
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		name = strings.TrimSpace(output)
 
-		command = "/opt/infmgmt/bin/get_state_of_vmguest.sh"
+		command = "/opt/infmgmt/bin/get_state_of_vmguest"
 		arguments = nil
 		arguments = append(arguments, vmhostDnsName)
 		arguments = append(arguments, strconv.Itoa(i))
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		state = strings.TrimSpace(output)
 
-		command = "/opt/infmgmt/bin/get_uuid_of_vmguest.sh"
+		command = "/opt/infmgmt/bin/get_uuid_of_vmguest"
 		arguments = nil
 		arguments = append(arguments, vmhostDnsName)
 		arguments = append(arguments, name)

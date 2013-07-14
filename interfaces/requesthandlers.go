@@ -16,12 +16,12 @@ func NewRouter(requestHandler *RequestHandler) *mux.Router {
 	router := mux.NewRouter()
 
 	// GET /vmhosts returns a list of all vmhosts
-	router.HandleFunc("/vmhosts", func(res http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/webservice/vmhosts", func(res http.ResponseWriter, req *http.Request) {
 		requestHandler.HandleListVmhostsRequest(res, req)
 	})
 
 	// GET /vmhosts/{vmhostId}/vmguests shows list of virtual machines on vmhost
-	router.HandleFunc("/vmhosts/{vmhostId}/vmguests", func(res http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/webservice/vmhosts/{vmhostId}/vmguests", func(res http.ResponseWriter, req *http.Request) {
 		requestHandler.HandleListVmguestsRequest(res, req)
 	}).Methods("GET")
 
@@ -31,14 +31,17 @@ func NewRouter(requestHandler *RequestHandler) *mux.Router {
 	//	}).Methods("GET")
 
 	// POST /vmhosts/{vmhostId}/vmguests triggers the procedure that creates a virtual machine
-	router.HandleFunc("/vmhosts/{vmhostId}/vmguests", func(res http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/webservice/vmhosts/{vmhostId}/vmguests", func(res http.ResponseWriter, req *http.Request) {
 		requestHandler.HandleCreateVmguestRequest(res, req)
 	}).Methods("POST")
 
 	// POST /cacherefresh triggers update of the vmguest cache
-	router.HandleFunc("/cacheupdate", func(res http.ResponseWriter, req *http.Request) {
+	router.HandleFunc("/webservice/cacheupdate", func(res http.ResponseWriter, req *http.Request) {
 		requestHandler.HandleUpdateCache(res, req)
 	}).Methods("POST")
+
+	// Application
+	router.PathPrefix("/app").Handler(http.StripPrefix("/app", http.FileServer(http.Dir("/home/manuel.kiessling/Dropbox/Projects/infmgmt-frontend/htdocs"))))
 
 	return router
 }
