@@ -38,6 +38,5 @@ func main() {
 	r := interfaces.NewRouter(rh)
 
 	http.Handle("/", r)
-	//http.Handle("/app/", http.StripPrefix("/app/", ))
 	http.ListenAndServe(":8080", nil)
 }

@@ -41,7 +41,7 @@ func NewRouter(requestHandler *RequestHandler) *mux.Router {
 	}).Methods("POST")
 
 	// Application
-	router.PathPrefix("/app").Handler(http.StripPrefix("/app", http.FileServer(http.Dir("/home/manuel.kiessling/Dropbox/Projects/infmgmt-frontend/htdocs"))))
+	router.PathPrefix("/app").Handler(http.StripPrefix("/app", http.FileServer(http.Dir("/usr/share/infmgmt/htdocs"))))
 
 	return router
 }
