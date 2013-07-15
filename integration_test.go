@@ -31,7 +31,7 @@ func setupRouter() *mux.Router {
 
 	dbMap.DropTables()
 	dbMap.CreateTables()
-	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName) VALUES (?, ?)", "1", "vmhost1")
+	dbMap.Exec("INSERT INTO vmhosts (Id, DnsName, TotalMemory) VALUES (?, ?, ?)", "1", "vmhost1", 32918292)
 
 	mi := new(domain.VmhostsInteractor)
 	mi.VmhostRepository = vhr
@@ -64,7 +64,7 @@ func TestGetVmhosts(t *testing.T) {
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\"}}}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"TotalMemory\":32918292,\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576}}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -81,7 +81,7 @@ func TestGetVmhostsFromEmptyCache(t *testing.T) {
 	router := setupRouter()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"Vmguests\":{}}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"TotalMemory\":32918292,\"Vmguests\":{}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -109,7 +109,7 @@ func TestGetVmguests(t *testing.T) {
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\"}}"
+	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())

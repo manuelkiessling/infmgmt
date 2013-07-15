@@ -22,5 +22,11 @@ func (ce *MockCommandExecutor) Run(command string, arguments ...string) (output 
 	if commandline == "/usr/share/infmgmt/shellscripts/vmhostoperations/get_uuid_of_vmguest vmhost1 virtual1" {
 		return "a0f39677-afda-f5bb-20b9-c5d8e3e06edf", nil
 	}
+	if commandline == "/usr/share/infmgmt/shellscripts/vmhostoperations/get_allocated_memory_of_vmguest vmhost1 virtual1" {
+		return "1048576", nil
+	}
+	if commandline == "/usr/share/infmgmt/shellscripts/vmhostoperations/get_memory_size_of_vmhost vmhost1" {
+		return "32918292", nil
+	}
 	return "", nil
 }

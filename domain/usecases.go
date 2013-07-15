@@ -31,15 +31,17 @@ type VmhostOperationsHandler interface {
 }
 
 type VmhostsListEntry struct {
-	Id       string
-	DnsName  string
-	Vmguests map[string]*VmguestsListEntry
+	Id          string
+	DnsName     string
+	TotalMemory int
+	Vmguests    map[string]*VmguestsListEntry
 }
 
 type VmguestsListEntry struct {
-	Id    string
-	Name  string
-	State string
+	Id              string
+	Name            string
+	State           string
+	AllocatedMemory int
 }
 
 type VmhostsInteractor struct {
@@ -59,7 +61,7 @@ func (interactor *VmhostsInteractor) GetList() (map[string]*VmhostsListEntry, er
 		if err != nil {
 			return nil, fmt.Errorf("Error while trying to retrieve list of vmguests for vmhost %+v from repository", vmhost)
 		}
-		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName, vmguestList}
+		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName, vmhost.TotalMemory, vmguestList}
 	}
 	return list, nil
 }
@@ -72,7 +74,7 @@ func (interactor *VmhostsInteractor) GetVmguestsList(vmhostId string) (map[strin
 	}
 	list = make(map[string]*VmguestsListEntry, len(vmhost.Vmguests))
 	for _, vmguest := range vmhost.Vmguests {
-		list[vmguest.Id] = &VmguestsListEntry{vmguest.Id, vmguest.Name, vmguest.State}
+		list[vmguest.Id] = &VmguestsListEntry{vmguest.Id, vmguest.Name, vmguest.State, vmguest.AllocatedMemory}
 	}
 	return list, nil
 }

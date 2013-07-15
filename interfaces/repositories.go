@@ -26,10 +26,11 @@ type VmguestCacheRepository struct {
 }
 
 type vmguestModel struct {
-	Id            string
-	VmhostDnsName string
-	Name          string
-	State         string
+	Id              string
+	VmhostDnsName   string
+	Name            string
+	State           string
+	AllocatedMemory int
 }
 
 type VmhostRepository struct {
@@ -39,8 +40,9 @@ type VmhostRepository struct {
 }
 
 type vmhostModel struct {
-	Id      string
-	DnsName string
+	Id          string
+	DnsName     string
+	TotalMemory int
 }
 
 func NewVmguestLiveRepository(commandExecutor CommandExecutor) VmguestRepository {
@@ -60,6 +62,8 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 	var output string
 	var machineCount int
 	var id, name, state string
+	var allocatedMemory int
+	var err error
 	var command string
 	var arguments []string
 	var vmguests map[string]*domain.Vmguest
@@ -93,7 +97,17 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 		output, _ = repo.commandExecutor.Run(command, arguments...)
 		id = strings.TrimSpace(output)
 
-		vmguest, _ := domain.NewVmguest(id, name, state)
+		command = "/usr/share/infmgmt/shellscripts/vmhostoperations/get_allocated_memory_of_vmguest"
+		arguments = nil
+		arguments = append(arguments, vmhostDnsName)
+		arguments = append(arguments, name)
+		output, _ = repo.commandExecutor.Run(command, arguments...)
+		allocatedMemory, err = strconv.Atoi(strings.TrimSpace(output))
+		if err != nil {
+			return nil, fmt.Errorf("Could not convert retrieved allocated memory value to integer")
+		}
+
+		vmguest, _ := domain.NewVmguest(id, name, state, allocatedMemory)
 		vmguests[id] = vmguest
 	}
 	return vmguests, nil
@@ -101,7 +115,7 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 
 func (repo *VmguestCacheRepository) Store(vmhostDnsName string, vmguest *domain.Vmguest) error {
 	var vm *vmguestModel
-	vm = &vmguestModel{Id: vmguest.Id, VmhostDnsName: vmhostDnsName, Name: vmguest.Name, State: vmguest.State}
+	vm = &vmguestModel{Id: vmguest.Id, VmhostDnsName: vmhostDnsName, Name: vmguest.Name, State: vmguest.State, AllocatedMemory: vmguest.AllocatedMemory}
 	return repo.dbMap.Insert(vm)
 }
 
@@ -117,7 +131,7 @@ func (repo *VmguestCacheRepository) GetAll(vmhostDnsName string) (map[string]*do
 }
 
 func (repo *VmguestCacheRepository) getVmguestFromVmguestModel(vm *vmguestModel) *domain.Vmguest {
-	return &domain.Vmguest{Id: vm.Id, Name: vm.Name, State: vm.State}
+	return &domain.Vmguest{Id: vm.Id, Name: vm.Name, State: vm.State, AllocatedMemory: vm.AllocatedMemory}
 }
 
 func NewVmhostRepository(dbMap *gorp.DbMap, vmguestLiveRepository VmguestRepository, vmguestCacheRepository VmguestRepository) *VmhostRepository {
@@ -138,7 +152,7 @@ func (repo *VmhostRepository) Store(vmhost *domain.Vmhost) error {
 	if vmhost.DnsName == "" {
 		return errors.New("Cannot store vmhosts with an empty DnsName")
 	}
-	vm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName}
+	vm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName, TotalMemory: vmhost.TotalMemory}
 	return repo.dbMap.Insert(vm)
 }
 
@@ -203,5 +217,5 @@ func (repo *VmhostRepository) UpdateCache() error {
 }
 
 func (repo *VmhostRepository) getVmhostFromVmhostModel(vm *vmhostModel) *domain.Vmhost {
-	return &domain.Vmhost{Id: vm.Id, DnsName: vm.DnsName}
+	return &domain.Vmhost{Id: vm.Id, DnsName: vm.DnsName, TotalMemory: vm.TotalMemory}
 }

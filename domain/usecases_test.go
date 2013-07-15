@@ -44,15 +44,15 @@ func (repo *MockVmhostRepository) UpdateCache() error {
 func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
 	var vmhost *Vmhost
 	var vmguests map[string]*Vmguest
-	vmhost = &Vmhost{id, "vmhost" + id, vmguests}
+	vmhost = &Vmhost{id, "vmhost" + id, 32918292, vmguests}
 	return vmhost, nil
 }
 
 func (repo *MockVmhostRepository) GetAll() (map[string]*Vmhost, error) {
 	var vmguests map[string]*Vmguest
 	vmhosts := make(map[string]*Vmhost)
-	vmhosts["1"] = &Vmhost{"1", "vmhost1", vmguests}
-	vmhosts["2"] = &Vmhost{"2", "vmhost2", vmguests}
+	vmhosts["1"] = &Vmhost{"1", "vmhost1", 32918292, vmguests}
+	vmhosts["2"] = &Vmhost{"2", "vmhost2", 32918292, vmguests}
 	return vmhosts, nil
 }
 
