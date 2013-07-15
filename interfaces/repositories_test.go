@@ -55,6 +55,11 @@ func TestVmhostRepositoryStore(t *testing.T) {
 	if vmhost.TotalMemory != 32918292 {
 		t.Errorf("Vmhost repository did not store TotalMemory value")
 	}
+	vmhost.TotalMemory = 238934
+	err = repo.Store(vmhost)
+	if err != nil {
+		t.Errorf("Failed re-storing vmhost %+v in repo %+v, error %+v", vmhost, repo, err)
+	}
 }
 
 func TestVmhostRepositoryStoreFailsWithEmptyId(t *testing.T) {

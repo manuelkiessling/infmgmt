@@ -26,6 +26,10 @@ func main() {
 	dbMap.DropTables()
 	dbMap.CreateTables()
 
+	/*
+	vmhost, _ := domain.NewVmhost("1", "vmhost1", 32918292, nil)
+	vhr.Store(vmhost)
+	*/
 	vmhost, _ := domain.NewVmhost("1", "kvmhost1.meinauto.local", 32918292, nil)
 	vhr.Store(vmhost)
 	vmhost, _ = domain.NewVmhost("2", "kvmhost2.meinauto.local", 32918280, nil)

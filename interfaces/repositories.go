@@ -116,13 +116,14 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 func (repo *VmguestCacheRepository) Store(vmhostDnsName string, vmguest *domain.Vmguest) error {
 	var vm *vmguestModel
 	vm = &vmguestModel{Id: vmguest.Id, VmhostDnsName: vmhostDnsName, Name: vmguest.Name, State: vmguest.State, AllocatedMemory: vmguest.AllocatedMemory}
+	repo.dbMap.Delete(vm)
 	return repo.dbMap.Insert(vm)
 }
 
 func (repo *VmguestCacheRepository) GetAll(vmhostDnsName string) (map[string]*domain.Vmguest, error) {
 	var results []*vmguestModel
 	vmguests := make(map[string]*domain.Vmguest)
-	query := "SELECT * FROM vmguests WHERE VmhostDnsName = ?"
+	query := "SELECT * FROM vmguests WHERE VmhostDnsName = ? ORDER BY State, Name"
 	repo.dbMap.Select(&results, query, vmhostDnsName)
 	for _, result := range results {
 		vmguests[result.Id] = repo.getVmguestFromVmguestModel(result)
@@ -153,6 +154,7 @@ func (repo *VmhostRepository) Store(vmhost *domain.Vmhost) error {
 		return errors.New("Cannot store vmhosts with an empty DnsName")
 	}
 	vm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName, TotalMemory: vmhost.TotalMemory}
+	repo.dbMap.Delete(vm)
 	return repo.dbMap.Insert(vm)
 }
 
@@ -207,7 +209,10 @@ func (repo *VmhostRepository) UpdateCache() error {
 				fmt.Errorf("Error getting vmguests for UpdateCache")
 			}
 			for _, vmguest := range vmguests {
-				repo.vmguestCacheRepository.Store(vmhost.DnsName, vmguest)
+				err = repo.vmguestCacheRepository.Store(vmhost.DnsName, vmguest)
+				if err != nil {
+					fmt.Printf("Error while storing in vmguest cache: %+v", err)
+				}
 			}
 		}
 		cacheUpdateRunning = false
