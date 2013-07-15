@@ -1,10 +1,26 @@
 <ul class="vmhosts">
   <li class="vmhost-block" ng-repeat="vmhost in vmhosts">
-    <a class="vmhost-dnsname" href="#/vmhosts/{{vmhost.Id}}/vmguests">{{vmhost.DnsName}}</a>
+    {{vmhost.DnsName}}
     <ul class="vmguests-memory-bar">
-      <li style="width: {{vmguest.memoryBlockWidth}}%; background-color: #afa;" class="vmguest-memory-block" ng-repeat="vmguest in vmhost.Vmguests">
-        <a href="#/vmhosts/{{vmhost.Id}}/vmguests/{{vmguest.Id}}">{{vmguest.Name}}</a>
+      <li ng-mouseenter="vmguest.showInfobox = true"
+          ng-mouseleave="vmguest.showInfobox = false"
+          style="width: {{vmguest.memoryBlockWidth}}%; background-color: {{vmguest.stateColor}};"
+          class="vmguest-memory-block"
+          ng-repeat="vmguest in vmhost.Vmguests">
+        {{vmguest.Name}}
       </li>
     </ul>
+    <div class="vmguest-infobox"
+         ng-show="vmguest.showInfobox"
+         ng-repeat="vmguest in vmhost.Vmguests">
+      Name:
+      <strong>{{vmguest.Name}}</strong>
+      <br />
+      Allocated Memory:
+      <strong>{{vmguest.AllocatedMemory / 1024 / 1024 }} GiB</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
+      <br />
+      State:
+      <strong>{{vmguest.State}}</strong>
+    </div>
   </li>
 </ul>

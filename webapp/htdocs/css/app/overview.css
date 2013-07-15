@@ -21,7 +21,7 @@
 }
 
 .vmguest-memory-block {
-  font-family: "Courier";
+  font-size: 7px;
   float: left;
   display: inline-block;
   height: 18px;
@@ -31,4 +31,13 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.vmguest-infobox {
+  font-size: 10px;
+  position: absolute;
+  background-color: #eee;
+  border: 1px solid #aaa;
+  border-top: none;
+  padding: 8px;
 }
