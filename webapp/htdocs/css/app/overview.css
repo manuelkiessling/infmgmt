@@ -1,0 +1,34 @@
+.vmhosts {
+  list-style: none;
+}
+
+.vmhost-block {
+  margin-bottom: 20px;
+  clear: both;
+}
+
+.vmhost-dnsname {
+  font-weight: bold;
+}
+
+.vmguests-memory-bar {
+  list-style: none;
+  display: block;
+  height: 22px;
+  border: 1px #aaa solid;
+  padding: 0;
+  margin-top: 10px;
+}
+
+.vmguest-memory-block {
+  font-family: "Courier";
+  float: left;
+  display: inline-block;
+  height: 18px;
+  margin: 0;
+  padding: 2px;
+  border-right: 1px #aaa dotted;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
