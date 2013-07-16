@@ -2,9 +2,12 @@
 
 <ul class="vmhosts">
   <li class="vmhost-block well" ng-repeat="vmhost in vmhosts">
-    {{vmhost.DnsName}}
+    <div class="vmhost-block-title">{{vmhost.DnsName}}</div>
     <p class="vmhost-info">
-      Total host memory: {{vmhost.TotalMemory}}
+      Total host memory: {{vmhost.formattedTotalMemory}}
+    </p>
+    <p class="vmguests-memory-bar-label">
+      Memory distribution of virtual machines:
     </p>
     <ul class="vmguests-memory-bar">
       <li ng-mouseenter="vmguest.showInfobox = true"
@@ -22,7 +25,7 @@
       <strong>{{vmguest.Name}}</strong>
       <br />
       Allocated Memory:
-      <strong>{{ vmguest.AllocatedMemory / 1024 / 1024 }} GiB</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
+      <strong>{{ vmguest.formattedAllocatedMemory }}</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
       <br />
       State:
       <strong>{{vmguest.State}}</strong>

@@ -12,8 +12,14 @@
   clear: both;
 }
 
-.vmhost-dnsname {
+.vmhost-block-title {
   font-weight: bold;
+}
+
+.vmguests-memory-bar-label {
+  font-size: 10px;
+  margin-top: 10px;
+  margin-bottom: 2px;
 }
 
 .vmguests-memory-bar {
@@ -24,7 +30,7 @@
   border: 1px #aaa solid;
   box-shadow: 2px 2px 2px #ddd;
   padding: 0;
-  margin-top: 10px;
+  margin-top: 2px;
 }
 
 .vmguest-memory-block {
@@ -43,8 +49,9 @@
 .vmguest-infobox {
   font-size: 10px;
   position: absolute;
-  background-color: #eee;
+  background-color: #fafafa;
   border: 1px solid #aaa;
   border-top: none;
+  box-shadow: 2px 2px 2px #ddd;
   padding: 8px;
 }
