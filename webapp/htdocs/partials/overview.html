@@ -1,6 +1,11 @@
+<div class="container">
+
 <ul class="vmhosts">
-  <li class="vmhost-block" ng-repeat="vmhost in vmhosts">
+  <li class="vmhost-block well" ng-repeat="vmhost in vmhosts">
     {{vmhost.DnsName}}
+    <p class="vmhost-info">
+      Total host memory: {{vmhost.TotalMemory}}
+    </p>
     <ul class="vmguests-memory-bar">
       <li ng-mouseenter="vmguest.showInfobox = true"
           ng-mouseleave="vmguest.showInfobox = false"
@@ -17,10 +22,12 @@
       <strong>{{vmguest.Name}}</strong>
       <br />
       Allocated Memory:
-      <strong>{{vmguest.AllocatedMemory / 1024 / 1024 }} GiB</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
+      <strong>{{ vmguest.AllocatedMemory / 1024 / 1024 }} GiB</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
       <br />
       State:
       <strong>{{vmguest.State}}</strong>
     </div>
   </li>
 </ul>
+
+</div>

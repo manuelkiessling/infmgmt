@@ -2,6 +2,11 @@
   list-style: none;
 }
 
+.vmhost-info {
+  font-size: 10px;
+  color: #999;
+}
+
 .vmhost-block {
   margin-bottom: 20px;
   clear: both;
@@ -16,6 +21,7 @@
   display: block;
   height: 22px;
   border: 1px #aaa solid;
+  box-shadow: 2px 2px 2px #ddd;
   padding: 0;
   margin-top: 10px;
 }
