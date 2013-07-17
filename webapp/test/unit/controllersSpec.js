@@ -9,11 +9,13 @@ describe('infmgmt controllers', function() {
       "1":{
         "Id":"1",
         "DnsName":"vmhost1.example.com",
+        "TotalMemory": 1024*1024,
         "Vmguests":{
           "abc":{
             "Id":"abc",
             "Name":"virtual1.example.com",
-            "State":"running"
+            "State":"running",
+            "AllocatedMemory": 1024*512
           }
         }
       }
@@ -35,7 +37,28 @@ describe('infmgmt controllers', function() {
     it('should create "vmhosts" model with 1 vmhost fetched from xhr', function() {
       $httpBackend.flush();
 
-      expect(JSON.stringify(scope.vmhosts)).toEqual(JSON.stringify(vmhosts));
+
+      var expectedVmhosts = {
+        "1":{
+          "Id":"1",
+          "DnsName":"vmhost1.example.com",
+          "TotalMemory": 1024*1024,
+          "Vmguests":{
+            "abc":{
+              "Id":"abc",
+              "Name":"virtual1.example.com",
+              "State":"running",
+              "AllocatedMemory": 1024*512,
+              "memoryBlockWidth":50,
+              "formattedAllocatedMemory":"0.5 GiB",
+              "stateColor":"#7f7"
+            }
+          },
+          "formattedTotalMemory":"1 GiB",
+        }
+      };
+
+      expect(JSON.stringify(scope.vmhosts)).toEqual(JSON.stringify(expectedVmhosts));
     });
   });
 
