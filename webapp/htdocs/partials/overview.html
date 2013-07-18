@@ -3,9 +3,7 @@
 <ul class="vmhosts">
   <li class="vmhost-block well" ng-repeat="vmhost in vmhosts">
     <div class="vmhost-block-title">{{vmhost.DnsName}}</div>
-    <p class="vmhost-info">
-      Total host memory: {{vmhost.formattedTotalMemory}}
-    </p>
+    <p class="vmhost-info">Total host memory: {{vmhost.formattedTotalMemory}}</p>
     <p class="vmguests-memory-bar-label">
       Memory distribution of virtual machines:
     </p>
