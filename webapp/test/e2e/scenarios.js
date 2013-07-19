@@ -30,7 +30,7 @@ describe('Infmgmt App', function() {
   });
 
   it('should display the date and time the VM guest info was last updated in the info-box', function() {
-    expect(element('ul.vmhosts li:nth-child(1) div.vmguest-infobox strong.last-updated-info').text()).toBe('1978-10-04 09:32:00');
+    expect(element('ul.vmhosts li:nth-child(1) div.vmguest-infobox strong.last-updated-info').text()).toMatch(new RegExp('^(\\d{4})-(\\d{2})-(\\d{2}) (\\d{2}):(\\d{2}):(\\d{2})$'));
     // TODO: replace exact date test with regex
   });
 
