@@ -1,34 +1,34 @@
 <div class="container">
 
-<ul class="vmhosts">
-  <li class="vmhost-block well" ng-repeat="vmhost in vmhosts">
-    <div class="vmhost-block-title">{{vmhost.DnsName}}</div>
-    <p class="vmhost-info">Total host memory: {{vmhost.formattedTotalMemory}}</p>
-    <p class="vmguests-memory-bar-label">
-      Memory distribution of virtual machines:
-    </p>
-    <ul class="vmguests-memory-bar">
-      <li ng-mouseenter="vmguest.showInfobox = true"
-          ng-mouseleave="vmguest.showInfobox = false"
-          style="width: {{vmguest.memoryBlockWidth}}%; background-color: {{vmguest.stateColor}};"
-          class="vmguest-memory-block"
-          ng-repeat="vmguest in vmhost.Vmguests">
-        {{vmguest.Name}}
-      </li>
-    </ul>
-    <div class="vmguest-infobox"
-         ng-show="vmguest.showInfobox"
-         ng-repeat="vmguest in vmhost.Vmguests">
-      Name:
-      <strong>{{vmguest.Name}}</strong>
-      <br />
-      Allocated Memory:
-      <strong>{{ vmguest.formattedAllocatedMemory }}</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
-      <br />
-      State:
-      <strong>{{vmguest.State}}</strong>
-    </div>
-  </li>
-</ul>
+  <ul class="vmhosts">
+    <li class="vmhost-block well" ng-repeat="vmhost in vmhosts">
+      <div class="vmhost-block-title">{{vmhost.DnsName}}</div>
+      <p class="vmhost-info">Total host memory: {{vmhost.formattedTotalMemory}}</p>
+      <p class="vmguests-memory-bar-label">
+        Memory distribution of virtual machines:
+      </p>
+      <ul class="vmguests-memory-bar">
+        <li ng-mouseenter="vmguest.showInfobox = true"
+            ng-mouseleave="vmguest.showInfobox = false"
+            style="width: {{vmguest.memoryBlockWidth}}%; background-color: {{vmguest.stateColor}};"
+            class="vmguest-memory-block"
+            ng-repeat="vmguest in vmhost.Vmguests">
+          {{vmguest.Name}}
+        </li>
+      </ul>
+      <div class="vmguest-infobox"
+           ng-show="vmguest.showInfobox"
+           ng-repeat="vmguest in vmhost.Vmguests">
+        Name:
+        <strong>{{vmguest.Name}}</strong>
+        <br />
+        Allocated Memory:
+        <strong>{{ vmguest.formattedAllocatedMemory }}</strong> ({{vmguest.memoryBlockWidth}}% of host memory)
+        <br />
+        State:
+        <strong>{{vmguest.State}}</strong>
+      </div>
+    </li>
+  </ul>
 
 </div>
