@@ -22,7 +22,8 @@ function OverviewCtrl($scope, VmhostStore) {
         } else {
           vmhosts[vmhostId].Vmguests[vmguestId].stateColor = "#ddd";
         }
-        console.log(vmhosts[vmhostId].Vmguests[vmguestId]);
+        vmhosts[vmhostId].Vmguests[vmguestId].LastUpdatedInfo = "1978-10-04 09:32:00";
+        // TODO: LastUpdateInfo has to be provided by backend
       }
     }
     $scope.vmhosts = vmhosts;

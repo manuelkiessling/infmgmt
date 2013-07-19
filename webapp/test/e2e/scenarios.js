@@ -29,5 +29,10 @@ describe('Infmgmt App', function() {
     expect(repeater('ul.vmhosts li:nth-child(1) div.vmguest-infobox').count()).toBe(1);
   });
 
+  it('should display the date and time the VM guest info was last updated in the info-box', function() {
+    expect(element('ul.vmhosts li:nth-child(1) div.vmguest-infobox strong.last-updated-info').text()).toBe('1978-10-04 09:32:00');
+    // TODO: replace exact date test with regex
+  });
+
  });
 });
