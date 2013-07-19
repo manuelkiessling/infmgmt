@@ -21,8 +21,12 @@ describe('Infmgmt App', function() {
     expect(element('ul.vmguests-memory-bar').count()).toBe(1);
   });
 
-  it('should show a list of all VM guests for the VM host', function() {
+  it('should show a memory bar for every VM guest of the VM host', function() {
     expect(repeater('ul.vmhosts li:nth-child(1) .vmguests-memory-bar li').count()).toBe(1);
+  });
+
+  it('should generate an info-box for every VM guest of the VM host', function() {
+    expect(repeater('ul.vmhosts li:nth-child(1) div.vmguest-infobox').count()).toBe(1);
   });
 
  });
