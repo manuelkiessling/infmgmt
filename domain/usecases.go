@@ -57,11 +57,11 @@ func (interactor *VmhostsInteractor) GetList() (map[string]*VmhostsListEntry, er
 	}
 	list = make(map[string]*VmhostsListEntry, len(vmhosts))
 	for _, vmhost := range vmhosts {
-		vmguestList, err := interactor.GetVmguestsList(vmhost.Id)
+		vmguestList, err := interactor.GetVmguestsList(vmhost.Id())
 		if err != nil {
 			return nil, fmt.Errorf("Error while trying to retrieve list of vmguests for vmhost %+v from repository", vmhost)
 		}
-		list[vmhost.Id] = &VmhostsListEntry{vmhost.Id, vmhost.DnsName, vmhost.TotalMemory, vmguestList}
+		list[vmhost.Id()] = &VmhostsListEntry{vmhost.Id(), vmhost.DnsName(), vmhost.TotalMemory(), vmguestList}
 	}
 	return list, nil
 }
@@ -72,9 +72,9 @@ func (interactor *VmhostsInteractor) GetVmguestsList(vmhostId string) (map[strin
 	if err != nil {
 		return nil, fmt.Errorf("Error while trying to retrieve vmhost with Id %s from repository", vmhostId)
 	}
-	list = make(map[string]*VmguestsListEntry, len(vmhost.Vmguests))
-	for _, vmguest := range vmhost.Vmguests {
-		list[vmguest.Id] = &VmguestsListEntry{vmguest.Id, vmguest.Name, vmguest.State, vmguest.AllocatedMemory}
+	list = make(map[string]*VmguestsListEntry, len(vmhost.Vmguests()))
+	for _, vmguest := range vmhost.Vmguests() {
+		list[vmguest.Id()] = &VmguestsListEntry{vmguest.Id(), vmguest.Name(), vmguest.State(), vmguest.AllocatedMemory()}
 	}
 	return list, nil
 }
@@ -83,7 +83,7 @@ func (interactor *VmhostsInteractor) CreateVmguest(vmhostId string, vmguestName 
 	vmhost, err := interactor.VmhostRepository.FindById(vmhostId)
 	if err == nil {
 		pId := interactor.VmhostOperationsHandler.InitializeProcedure()
-		interactor.VmhostOperationsHandler.AddCommandsCreateVirtualmachine(pId, vmhost.DnsName, vmguestName)
+		interactor.VmhostOperationsHandler.AddCommandsCreateVirtualmachine(pId, vmhost.DnsName(), vmguestName)
 		// TODO: create vmguest entity as soon as all procedures are finished,
 		//       add it to the vmguest cache (or get this by running the vmguest live repo?)
 		//       maybe we should pass the channel into each ExecuteProcedure, this way it's
