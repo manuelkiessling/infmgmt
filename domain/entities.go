@@ -12,25 +12,74 @@ import (
 )
 
 type Vmhost struct {
-	Id          string
-	DnsName     string
-	TotalMemory int
-	Vmguests    map[string]*Vmguest
+	id          string
+	dnsName     string
+	totalMemory int
+	vmguests    map[string]*Vmguest
 }
 
 type Vmguest struct {
-	Id              string
-	Name            string
-	State           string
-	AllocatedMemory int
+	id              string
+	name            string
+	state           string
+	allocatedMemory int
 }
 
-func NewVmhost(id string, dnsName string, totalMemory int, vmguests map[string]*Vmguest) (newVmhost *Vmhost, err error) {
-	vmhost := &Vmhost{id, dnsName, totalMemory, vmguests}
+func NewVmhost(id string, dnsName string) (newVmhost *Vmhost, err error) {
+	vmhost := &Vmhost{id, dnsName, 0, nil}
 	return vmhost, nil
 }
 
-func NewVmguest(id string, name string, state string, allocatedMemory int) (newVmguest *Vmguest, err error) {
-	vmguest := &Vmguest{id, name, state, allocatedMemory}
+func (vh *Vmhost) Id() string {
+	return vh.id
+}
+
+func (vh *Vmhost) DnsName() string {
+	return vh.dnsName
+}
+
+func (vh *Vmhost) SetVmguests(vmguests map[string]*Vmguest) {
+	vh.vmguests = vmguests
+}
+
+func (vh *Vmhost) Vmguests() map[string]*Vmguest {
+	return vh.vmguests
+}
+
+func (vh *Vmhost) SetTotalMemory(totalMemory int) {
+	vh.totalMemory = totalMemory
+}
+
+func (vh *Vmhost) TotalMemory() int {
+	return vh.totalMemory
+}
+
+
+func NewVmguest(id string, name string) (newVmguest *Vmguest, err error) {
+	vmguest := &Vmguest{id, name, "unknown", 0}
 	return vmguest, nil
+}
+
+func (vg *Vmguest) Id() string {
+	return vg.id
+}
+
+func (vg *Vmguest) Name() string {
+	return vg.name
+}
+
+func (vg *Vmguest) SetState(state string) {
+	vg.state = state
+}
+
+func (vg *Vmguest) State() string {
+	return vg.state
+}
+
+func (vg *Vmguest) SetAllocatedMemory(allocatedMemory int) {
+	vg.allocatedMemory = allocatedMemory
+}
+
+func (vg *Vmguest) AllocatedMemory() int {
+	return vg.allocatedMemory
 }
