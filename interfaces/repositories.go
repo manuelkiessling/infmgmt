@@ -107,7 +107,9 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 			return nil, fmt.Errorf("Could not convert retrieved allocated memory value to integer")
 		}
 
-		vmguest, _ := domain.NewVmguest(id, name, state, allocatedMemory)
+		vmguest, _ := domain.NewVmguest(id, name)
+		vmguest.SetState(state)
+		vmguest.SetAllocatedMemory(allocatedMemory)
 		vmguests[id] = vmguest
 	}
 	return vmguests, nil
@@ -115,7 +117,7 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 
 func (repo *VmguestCacheRepository) Store(vmhostDnsName string, vmguest *domain.Vmguest) error {
 	var vm *vmguestModel
-	vm = &vmguestModel{Id: vmguest.Id, VmhostDnsName: vmhostDnsName, Name: vmguest.Name, State: vmguest.State, AllocatedMemory: vmguest.AllocatedMemory}
+	vm = &vmguestModel{Id: vmguest.Id(), VmhostDnsName: vmhostDnsName, Name: vmguest.Name(), State: vmguest.State(), AllocatedMemory: vmguest.AllocatedMemory()}
 	repo.dbMap.Delete(vm)
 	return repo.dbMap.Insert(vm)
 }
@@ -132,7 +134,10 @@ func (repo *VmguestCacheRepository) GetAll(vmhostDnsName string) (map[string]*do
 }
 
 func (repo *VmguestCacheRepository) getVmguestFromVmguestModel(vm *vmguestModel) *domain.Vmguest {
-	return &domain.Vmguest{Id: vm.Id, Name: vm.Name, State: vm.State, AllocatedMemory: vm.AllocatedMemory}
+	vmguest, _ := domain.NewVmguest(vm.Id, vm.Name)
+	vmguest.SetState(vm.State)
+	vmguest.SetAllocatedMemory(vm.AllocatedMemory)
+	return vmguest
 }
 
 func NewVmhostRepository(dbMap *gorp.DbMap, vmguestLiveRepository VmguestRepository, vmguestCacheRepository VmguestRepository) *VmhostRepository {
@@ -147,13 +152,13 @@ func NewVmhostRepository(dbMap *gorp.DbMap, vmguestLiveRepository VmguestReposit
 
 func (repo *VmhostRepository) Store(vmhost *domain.Vmhost) error {
 	var vm *vmhostModel
-	if vmhost.Id == "" {
+	if vmhost.Id() == "" {
 		return errors.New("Cannot store vmhosts with an empty Id")
 	}
-	if vmhost.DnsName == "" {
+	if vmhost.DnsName() == "" {
 		return errors.New("Cannot store vmhosts with an empty DnsName")
 	}
-	vm = &vmhostModel{Id: vmhost.Id, DnsName: vmhost.DnsName, TotalMemory: vmhost.TotalMemory}
+	vm = &vmhostModel{Id: vmhost.Id(), DnsName: vmhost.DnsName(), TotalMemory: vmhost.TotalMemory()}
 	repo.dbMap.Delete(vm)
 	return repo.dbMap.Insert(vm)
 }
@@ -165,7 +170,11 @@ func (repo *VmhostRepository) FindById(id string) (*domain.Vmhost, error) {
 	if obj != nil {
 		vm := obj.(*vmhostModel)
 		vmhost = repo.getVmhostFromVmhostModel(vm)
-		vmhost.Vmguests, _ = repo.vmguestCacheRepository.GetAll(vmhost.DnsName)
+		vmguests, err := repo.vmguestCacheRepository.GetAll(vmhost.DnsName())
+		if err != nil {
+			return nil, err
+		}
+		vmhost.SetVmguests(vmguests)
 	} else {
 		vmhost = nil
 		err = fmt.Errorf("No vmhost with id %v in repository", id)
@@ -180,11 +189,11 @@ func (repo *VmhostRepository) GetAll() (map[string]*domain.Vmhost, error) {
 	repo.dbMap.Select(&results, query)
 	for _, result := range results {
 		vmhost := repo.getVmhostFromVmhostModel(result)
-		vmguests, err := repo.vmguestCacheRepository.GetAll(vmhost.DnsName)
+		vmguests, err := repo.vmguestCacheRepository.GetAll(vmhost.DnsName())
 		if err != nil {
 			return nil, fmt.Errorf("Error loading vmguests for vmhost (%+v)", err)
 		}
-		vmhost.Vmguests = vmguests
+		vmhost.SetVmguests(vmguests)
 		vmhosts[result.Id] = vmhost
 	}
 	return vmhosts, nil
@@ -204,12 +213,12 @@ func (repo *VmhostRepository) UpdateCache() error {
 
 	go func() {
 		for _, vmhost := range vmhosts {
-			vmguests, err := repo.vmguestLiveRepository.GetAll(vmhost.DnsName)
+			vmguests, err := repo.vmguestLiveRepository.GetAll(vmhost.DnsName())
 			if err != nil {
 				fmt.Errorf("Error getting vmguests for UpdateCache")
 			}
 			for _, vmguest := range vmguests {
-				err = repo.vmguestCacheRepository.Store(vmhost.DnsName, vmguest)
+				err = repo.vmguestCacheRepository.Store(vmhost.DnsName(), vmguest)
 				if err != nil {
 					fmt.Printf("Error while storing in vmguest cache: %+v", err)
 				}
@@ -222,5 +231,7 @@ func (repo *VmhostRepository) UpdateCache() error {
 }
 
 func (repo *VmhostRepository) getVmhostFromVmhostModel(vm *vmhostModel) *domain.Vmhost {
-	return &domain.Vmhost{Id: vm.Id, DnsName: vm.DnsName, TotalMemory: vm.TotalMemory}
+	vmhost, _ := domain.NewVmhost(vm.Id, vm.DnsName)
+	vmhost.SetTotalMemory(vm.TotalMemory)
+	return vmhost
 }

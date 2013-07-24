@@ -43,7 +43,8 @@ func (repo *VmhostRepository) reset() {
 }
 
 func TestVmhostRepositoryStore(t *testing.T) {
-	vmhost, _ := domain.NewVmhost("12345", "vmhost1", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("12345", "vmhost1")
+	vmhost.SetTotalMemory(32918292)
 	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
@@ -52,10 +53,10 @@ func TestVmhostRepositoryStore(t *testing.T) {
 		t.Errorf("Failed storing vmhost %+v in repo %+v, error %+v", vmhost, repo, err)
 	}
 	vmhost, _ = repo.FindById("12345")
-	if vmhost.TotalMemory != 32918292 {
+	if vmhost.TotalMemory() != 32918292 {
 		t.Errorf("Vmhost repository did not store TotalMemory value")
 	}
-	vmhost.TotalMemory = 238934
+	vmhost.SetTotalMemory(238934)
 	err = repo.Store(vmhost)
 	if err != nil {
 		t.Errorf("Failed re-storing vmhost %+v in repo %+v, error %+v", vmhost, repo, err)
@@ -63,7 +64,8 @@ func TestVmhostRepositoryStore(t *testing.T) {
 }
 
 func TestVmhostRepositoryStoreFailsWithEmptyId(t *testing.T) {
-	vmhost, _ := domain.NewVmhost("", "vmhost1", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("", "vmhost1")
+	vmhost.SetTotalMemory(32918292)
 	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
@@ -74,7 +76,8 @@ func TestVmhostRepositoryStoreFailsWithEmptyId(t *testing.T) {
 }
 
 func TestVmhostRepositoryStoreFailsWithEmptyDnsName(t *testing.T) {
-	vmhost, _ := domain.NewVmhost("12345", "", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("12345", "")
+	vmhost.SetTotalMemory(32918292)
 	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
@@ -85,13 +88,14 @@ func TestVmhostRepositoryStoreFailsWithEmptyDnsName(t *testing.T) {
 }
 
 func TestVmhostRepositoryFindById(t *testing.T) {
-	vmhost, _ := domain.NewVmhost("12345", "vmhost1", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("12345", "vmhost1")
+	vmhost.SetTotalMemory(32918292)
 	repo := setupVmhostRepo()
 	repo.reset()
 	defer repo.reset()
 	repo.Store(vmhost)
-	id := vmhost.Id
-	dnsName := vmhost.DnsName
+	id := vmhost.Id()
+	dnsName := vmhost.DnsName()
 	vmhost = nil
 	repo = nil
 	newRepo := setupVmhostRepo()
@@ -104,7 +108,7 @@ func TestVmhostRepositoryFindById(t *testing.T) {
 		t.Errorf("Repo %+v did not return a vmhost", newRepo)
 		return
 	}
-	if retrievedVmhost.DnsName != dnsName {
+	if retrievedVmhost.DnsName() != dnsName {
 		t.Errorf("Repo %+v did not return the correct vmhost: %+v", newRepo, retrievedVmhost)
 		return
 	}
@@ -116,12 +120,13 @@ func TestVmhostRepositoryGetAll(t *testing.T) {
 	repo.reset()
 	defer repo.reset()
 	for i := 0; i < 10; i++ {
-		vmhost, _ = domain.NewVmhost(strconv.Itoa(i), "vmhost"+strconv.Itoa(i), 32918292, nil)
+		vmhost, _ = domain.NewVmhost(strconv.Itoa(i), "vmhost"+strconv.Itoa(i))
+		vmhost.SetTotalMemory(32918292)
 		repo.Store(vmhost)
 	}
 	vmhosts, _ := repo.GetAll()
-	if vmhosts[vmhost.Id].DnsName != "vmhost9" {
-		t.Errorf("DnsName of retrieved vmhost %v (%+v) did not match DnsName of stored vmhost %+v", vmhost.Id, vmhosts[vmhost.Id], vmhost)
+	if vmhosts[vmhost.Id()].DnsName() != "vmhost9" {
+		t.Errorf("DnsName of retrieved vmhost %v (%+v) did not match DnsName of stored vmhost %+v", vmhost.Id(), vmhosts[vmhost.Id()], vmhost)
 	}
 }
 
@@ -130,20 +135,21 @@ func TestVmhostRepositoryUpdateCache(t *testing.T) {
 	repo.reset()
 	defer repo.reset()
 
-	vmhost, _ := domain.NewVmhost("12345", "vmhost1", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("12345", "vmhost1")
+	vmhost.SetTotalMemory(32918292)
 	repo.Store(vmhost)
 	vmhost, _ = repo.FindById("12345")
 
-	if len(vmhost.Vmguests) != 0 {
-		t.Errorf("Should be empty: %+v", vmhost.Vmguests)
+	if len(vmhost.Vmguests()) != 0 {
+		t.Errorf("Should be empty: %+v", vmhost.Vmguests())
 	}
 
 	repo.UpdateCache()
 
 	vmhost, _ = repo.FindById("12345")
-	vmguest := vmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
-	if vmguest.Name != "virtual1" || vmguest.State != "running" || vmguest.Id != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" || vmguest.AllocatedMemory != 1048576 {
-		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", repo, vmhost.Vmguests["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
+	vmguest := vmhost.Vmguests()["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
+	if vmguest.Name() != "virtual1" || vmguest.State() != "running" || vmguest.Id() != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" || vmguest.AllocatedMemory() != 1048576 {
+		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", repo, vmhost.Vmguests()["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
 		return
 	}
 }
@@ -153,7 +159,8 @@ func TestVmhostRepositoryUpdateCacheIsLocked(t *testing.T) {
 	repo.reset()
 	defer repo.reset()
 
-	vmhost, _ := domain.NewVmhost("12345", "vmhost1", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("12345", "vmhost1")
+	vmhost.SetTotalMemory(32918292)
 	repo.Store(vmhost)
 
 	err := repo.UpdateCache()
@@ -162,7 +169,7 @@ func TestVmhostRepositoryUpdateCacheIsLocked(t *testing.T) {
 	}
 	err = repo.UpdateCache()
 	if err == nil {
-		t.Errorf("Expected update cache to fail because another process is still running")	
+		t.Errorf("Expected update cache to fail because another process is still running")
 	}
 
 }
