@@ -12,6 +12,7 @@ package domain
 
 import (
 	"fmt"
+	"time"
 )
 
 type VmhostRepository interface {
@@ -42,6 +43,7 @@ type VmguestsListEntry struct {
 	Name            string
 	State           string
 	AllocatedMemory int
+	InfoUpdatedAt		time.Time
 }
 
 type VmhostsInteractor struct {
@@ -74,7 +76,7 @@ func (interactor *VmhostsInteractor) GetVmguestsList(vmhostId string) (map[strin
 	}
 	list = make(map[string]*VmguestsListEntry, len(vmhost.Vmguests()))
 	for _, vmguest := range vmhost.Vmguests() {
-		list[vmguest.Id()] = &VmguestsListEntry{vmguest.Id(), vmguest.Name(), vmguest.State(), vmguest.AllocatedMemory()}
+		list[vmguest.Id()] = &VmguestsListEntry{vmguest.Id(), vmguest.Name(), vmguest.State(), vmguest.AllocatedMemory(), vmguest.InfoUpdatedAt()}
 	}
 	return list, nil
 }
