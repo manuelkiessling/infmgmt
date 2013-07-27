@@ -11,7 +11,7 @@ func TestCreateVmguest(t *testing.T) {
 		t.Errorf("Could not instantiate new vmguest: %+v", err)
 	}
 	if vmguest.InfoUpdatedAt().IsZero() != true {
-		t.Errorf("Vmguest was not instantiated with zero infoUpdatedAt time")
+		t.Errorf("Vmguest was not instantiated with zero infoUpdatedAt time: %+v", vmguest.InfoUpdatedAt())
 	}
 	vmguest.SetState("shut down")
 	vmguest.SetAllocatedMemory(1048576)

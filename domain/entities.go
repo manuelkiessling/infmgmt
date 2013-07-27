@@ -59,7 +59,7 @@ func (vh *Vmhost) TotalMemory() int {
 
 
 func NewVmguest(id string, name string) (newVmguest *Vmguest, err error) {
-	vmguest := &Vmguest{id, name, "unknown", 0, time.Unix(0, 0)}
+	vmguest := &Vmguest{id, name, "unknown", 0, time.Date(1, time.January, 1, 0, 0, 0, 0, time.UTC)}
 	return vmguest, nil
 }
 
