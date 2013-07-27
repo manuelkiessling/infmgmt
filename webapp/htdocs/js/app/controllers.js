@@ -9,7 +9,7 @@ function formatMemory(memorySize) {
 }
 
 function OverviewCtrl($scope, VmhostStore) {
-  var vmhosts;
+  var vmhosts, infoUpdatedAtDate;
 
   vmhosts = VmhostStore.query({}, function success() {
     for (var vmhostId in vmhosts) {
@@ -22,7 +22,8 @@ function OverviewCtrl($scope, VmhostStore) {
         } else {
           vmhosts[vmhostId].Vmguests[vmguestId].stateColor = "#ddd";
         }
-        vmhosts[vmhostId].Vmguests[vmguestId].LastUpdatedInfo = "1978-10-04 09:32:00";
+        infoUpdatedAtDate = new Date(vmhosts[vmhostId].Vmguests[vmguestId].InfoUpdatedAt * 1000)
+        vmhosts[vmhostId].Vmguests[vmguestId].infoUpdatedAt = infoUpdatedAtDate.toString()
         // TODO: LastUpdateInfo has to be provided by backend
       }
     }
