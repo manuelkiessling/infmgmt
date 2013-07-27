@@ -9,6 +9,7 @@ package domain
 
 import (
 	_ "errors"
+	"time"
 )
 
 type Vmhost struct {
@@ -23,6 +24,7 @@ type Vmguest struct {
 	name            string
 	state           string
 	allocatedMemory int
+	infoUpdatedAt		time.Time
 }
 
 func NewVmhost(id string, dnsName string) (newVmhost *Vmhost, err error) {
@@ -56,7 +58,8 @@ func (vh *Vmhost) TotalMemory() int {
 
 
 func NewVmguest(id string, name string) (newVmguest *Vmguest, err error) {
-	vmguest := &Vmguest{id, name, "unknown", 0}
+	zeroTime, _ := time.Parse("2013-07-27", "0000-01-01")
+	vmguest := &Vmguest{id, name, "unknown", 0, zeroTime}
 	return vmguest, nil
 }
 
@@ -82,4 +85,12 @@ func (vg *Vmguest) SetAllocatedMemory(allocatedMemory int) {
 
 func (vg *Vmguest) AllocatedMemory() int {
 	return vg.allocatedMemory
+}
+
+func (vg *Vmguest) SetInfoUpdatedAt(infoUpdatedAt time.Time) {
+	vg.infoUpdatedAt = infoUpdatedAt
+}
+
+func (vg *Vmguest) InfoUpdatedAt() time.Time {
+	return vg.infoUpdatedAt
 }

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"testing"
+	"time"
 )
 
 func TestCreateVmguest(t *testing.T) {
@@ -9,12 +10,18 @@ func TestCreateVmguest(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not instantiate new vmguest: %+v", err)
 	}
+	if vmguest.InfoUpdatedAt().IsZero() != true {
+		t.Errorf("Vmguest was not instantiated with zero infoUpdatedAt time")
+	}
 	vmguest.SetState("shut down")
 	vmguest.SetAllocatedMemory(1048576)
+	now := time.Now()
+	vmguest.SetInfoUpdatedAt(now)
 	if vmguest.Id() != "12345" ||
 		vmguest.Name() != "virtual1" ||
 		vmguest.State() != "shut down" ||
-		vmguest.AllocatedMemory() != 1048576 {
+		vmguest.AllocatedMemory() != 1048576 ||
+		vmguest.InfoUpdatedAt().Equal(now) != true {
 		t.Errorf("Could not create and read vmguest %+v", vmguest)
 	}
 }

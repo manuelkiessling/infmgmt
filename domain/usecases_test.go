@@ -42,17 +42,22 @@ func (repo *MockVmhostRepository) UpdateCache() error {
 }
 
 func (repo *MockVmhostRepository) FindById(id string) (*Vmhost, error) {
-	var vmhost *Vmhost
 	var vmguests map[string]*Vmguest
-	vmhost = &Vmhost{id, "vmhost" + id, 32918292, vmguests}
+	vmhost, _ := NewVmhost(id, "vmhost" + id)
+	vmhost.SetTotalMemory(32918292)
+	vmhost.SetVmguests(vmguests)
 	return vmhost, nil
 }
 
 func (repo *MockVmhostRepository) GetAll() (map[string]*Vmhost, error) {
 	var vmguests map[string]*Vmguest
 	vmhosts := make(map[string]*Vmhost)
-	vmhosts["1"] = &Vmhost{"1", "vmhost1", 32918292, vmguests}
-	vmhosts["2"] = &Vmhost{"2", "vmhost2", 32918292, vmguests}
+	vmhosts["1"], _ = NewVmhost("1", "vmhost1")
+	vmhosts["1"].SetTotalMemory(32918292)
+	vmhosts["1"].SetVmguests(vmguests)
+	vmhosts["2"], _ = NewVmhost("2", "vmhost2")
+	vmhosts["2"].SetTotalMemory(32918292)
+	vmhosts["2"].SetVmguests(vmguests)
 	return vmhosts, nil
 }
 
