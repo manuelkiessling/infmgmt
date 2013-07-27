@@ -14,6 +14,7 @@ import (
 	"os"
 	"testing"
 	"time"
+	"strconv"
 )
 
 func setupRouter() *mux.Router {
@@ -59,15 +60,14 @@ func TestGetVmhosts(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
-	expectedTime := time.Now()
-	expectedTimeString := expectedTime.Format("2006-01-02T15:04:05-07:00")
+	expectedTimeString := strconv.FormatInt(time.Now().Unix(), 10)
 
 	time.Sleep(1000 * time.Millisecond)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"TotalMemory\":32918292,\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576,\"InfoUpdatedAt\":\""+expectedTimeString+"\"}}}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"TotalMemory\":32918292,\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576,\"InfoUpdatedAt\":"+expectedTimeString+"}}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -107,15 +107,14 @@ func TestGetVmguests(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
-	expectedTime := time.Now()
-	expectedTimeString := expectedTime.Format("2006-01-02T15:04:05-07:00")
+	expectedTimeString := strconv.FormatInt(time.Now().Unix(), 10)
 
 	time.Sleep(2000)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576,\"InfoUpdatedAt\":\""+expectedTimeString+"\"}}"
+	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576,\"InfoUpdatedAt\":"+expectedTimeString+"}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())

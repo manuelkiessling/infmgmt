@@ -8,8 +8,58 @@ import (
 	"net/http"
 )
 
+type vmhostResource struct {
+	Id          string
+	DnsName     string
+	TotalMemory int
+	Vmguests    map[string]*vmguestResource
+}
+
+type vmguestResource struct {
+	Id              string
+	Name            string
+	State           string
+	AllocatedMemory int
+	InfoUpdatedAt   int64
+}
+
 type RequestHandler struct {
 	vmhostsInteractor *domain.VmhostsInteractor
+}
+
+func convertVmhostsListEntriesToResources(vmhostsListEntries map[string]*domain.VmhostsListEntry) map[string]*vmhostResource {
+	vmhostResources := make(map[string]*vmhostResource)
+	for k, vmhostsListEntry := range vmhostsListEntries {
+		vmhostResources[k] = convertVmhostsListEntryToResource(vmhostsListEntry)
+	}
+	return vmhostResources
+}
+
+func convertVmguestsListEntriesToResources(vmguestsListEntries map[string]*domain.VmguestsListEntry) map[string]*vmguestResource {
+	vmguestResources := make(map[string]*vmguestResource)
+	for k, vmguestsListEntry := range vmguestsListEntries {
+		vmguestResources[k] = convertVmguestsListEntryToResource(vmguestsListEntry)
+	}
+	return vmguestResources
+}
+
+func convertVmhostsListEntryToResource(vmhostsListEntry *domain.VmhostsListEntry) *vmhostResource {
+	vmhostResource := new(vmhostResource)
+	vmhostResource.Id = vmhostsListEntry.Id
+	vmhostResource.DnsName = vmhostsListEntry.DnsName
+	vmhostResource.TotalMemory = vmhostsListEntry.TotalMemory
+	vmhostResource.Vmguests = convertVmguestsListEntriesToResources(vmhostsListEntry.Vmguests)
+	return vmhostResource
+}
+
+func convertVmguestsListEntryToResource(vmguestsListEntry *domain.VmguestsListEntry) *vmguestResource {
+	vmguestResource := new(vmguestResource)
+	vmguestResource.Id = vmguestsListEntry.Id
+	vmguestResource.Name = vmguestsListEntry.Name
+	vmguestResource.State = vmguestsListEntry.State
+	vmguestResource.AllocatedMemory = vmguestsListEntry.AllocatedMemory
+	vmguestResource.InfoUpdatedAt = vmguestsListEntry.InfoUpdatedAt.Unix()
+	return vmguestResource
 }
 
 func NewRouter(requestHandler *RequestHandler) *mux.Router {
@@ -54,7 +104,8 @@ func NewRequestHandler(vmhostsInteractor *domain.VmhostsInteractor) *RequestHand
 
 func (rh *RequestHandler) HandleListVmhostsRequest(res http.ResponseWriter, req *http.Request) {
 	list, _ := rh.vmhostsInteractor.GetList()
-	jsonResponse, _ := json.Marshal(list)
+	resources := convertVmhostsListEntriesToResources(list)
+	jsonResponse, _ := json.Marshal(resources)
 	res.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(res, "%s", jsonResponse)
 }
@@ -62,7 +113,8 @@ func (rh *RequestHandler) HandleListVmhostsRequest(res http.ResponseWriter, req 
 func (rh *RequestHandler) HandleListVmguestsRequest(res http.ResponseWriter, req *http.Request) {
 	vmhostId := mux.Vars(req)["vmhostId"]
 	list, _ := rh.vmhostsInteractor.GetVmguestsList(vmhostId)
-	jsonResponse, _ := json.Marshal(list)
+	resources := convertVmguestsListEntriesToResources(list)
+	jsonResponse, _ := json.Marshal(resources)
 	res.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(res, "%s", jsonResponse)
 }
