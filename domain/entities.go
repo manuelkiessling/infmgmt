@@ -9,6 +9,7 @@ package domain
 
 import (
 	_ "errors"
+	_ "fmt"
 	"time"
 )
 
@@ -58,8 +59,7 @@ func (vh *Vmhost) TotalMemory() int {
 
 
 func NewVmguest(id string, name string) (newVmguest *Vmguest, err error) {
-	zeroTime, _ := time.Parse("2013-07-27", "0000-01-01")
-	vmguest := &Vmguest{id, name, "unknown", 0, zeroTime}
+	vmguest := &Vmguest{id, name, "unknown", 0, time.Unix(0, 0)}
 	return vmguest, nil
 }
 

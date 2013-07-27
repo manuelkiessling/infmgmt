@@ -8,6 +8,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var cacheUpdateRunning = false
@@ -31,6 +32,7 @@ type vmguestModel struct {
 	Name            string
 	State           string
 	AllocatedMemory int
+	InfoUpdatedAt   int64
 }
 
 type VmhostRepository struct {
@@ -110,6 +112,7 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 		vmguest, _ := domain.NewVmguest(id, name)
 		vmguest.SetState(state)
 		vmguest.SetAllocatedMemory(allocatedMemory)
+		vmguest.SetInfoUpdatedAt(time.Now())
 		vmguests[id] = vmguest
 	}
 	return vmguests, nil
@@ -117,7 +120,12 @@ func (repo *VmguestLiveRepository) GetAll(vmhostDnsName string) (map[string]*dom
 
 func (repo *VmguestCacheRepository) Store(vmhostDnsName string, vmguest *domain.Vmguest) error {
 	var vm *vmguestModel
-	vm = &vmguestModel{Id: vmguest.Id(), VmhostDnsName: vmhostDnsName, Name: vmguest.Name(), State: vmguest.State(), AllocatedMemory: vmguest.AllocatedMemory()}
+	vm = &vmguestModel{Id: vmguest.Id(),
+		VmhostDnsName:   vmhostDnsName,
+		Name:            vmguest.Name(),
+		State:           vmguest.State(),
+		AllocatedMemory: vmguest.AllocatedMemory(),
+		InfoUpdatedAt:   vmguest.InfoUpdatedAt().Unix()}
 	repo.dbMap.Delete(vm)
 	return repo.dbMap.Insert(vm)
 }
@@ -137,6 +145,7 @@ func (repo *VmguestCacheRepository) getVmguestFromVmguestModel(vm *vmguestModel)
 	vmguest, _ := domain.NewVmguest(vm.Id, vm.Name)
 	vmguest.SetState(vm.State)
 	vmguest.SetAllocatedMemory(vm.AllocatedMemory)
+	vmguest.SetInfoUpdatedAt(time.Unix(vm.InfoUpdatedAt, 0))
 	return vmguest
 }
 

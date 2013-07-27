@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func setupVmguestLiveRepo() VmguestRepository {
@@ -148,6 +149,14 @@ func TestVmhostRepositoryUpdateCache(t *testing.T) {
 
 	vmhost, _ = repo.FindById("12345")
 	vmguest := vmhost.Vmguests()["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"]
+
+	vmguestInfoUpdatedAt := vmguest.InfoUpdatedAt()
+	durationSinceVmguestWasUpdated := time.Since(vmguestInfoUpdatedAt)
+
+	if durationSinceVmguestWasUpdated.Seconds() > 5.0 {
+		t.Errorf("The repo says that vmguest %+v wasn't recently updated. It was last updated %+v ago.", vmguest, durationSinceVmguestWasUpdated)
+	}
+
 	if vmguest.Name() != "virtual1" || vmguest.State() != "running" || vmguest.Id() != "a0f39677-afda-f5bb-20b9-c5d8e3e06edf" || vmguest.AllocatedMemory() != 1048576 {
 		t.Errorf("Repo %+v did not return a vmhost with correct vmguests: %+v", repo, vmhost.Vmguests()["a0f39677-afda-f5bb-20b9-c5d8e3e06edf"])
 		return
