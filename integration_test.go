@@ -23,7 +23,7 @@ func setupRouter() *mux.Router {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-integrationtestdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
-	//dbMap.TraceOff()
+	dbMap.TraceOff()
 
 	vglr := interfaces.NewVmguestLiveRepository(ce)
 	vgcr := interfaces.NewVmguestCacheRepository(dbMap)
@@ -59,12 +59,15 @@ func TestGetVmhosts(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
-	time.Sleep(2000)
+	expectedTime := time.Now()
+	expectedTimeString := expectedTime.Format("2006-01-02T15:04:05-07:00")
+
+	time.Sleep(1000 * time.Millisecond)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"TotalMemory\":32918292,\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576}}}}"
+	expected := "{\"1\":{\"Id\":\"1\",\"DnsName\":\"vmhost1\",\"TotalMemory\":32918292,\"Vmguests\":{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576,\"InfoUpdatedAt\":\""+expectedTimeString+"\"}}}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
@@ -104,12 +107,15 @@ func TestGetVmguests(t *testing.T) {
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, updateCacheReq)
 
+	expectedTime := time.Now()
+	expectedTimeString := expectedTime.Format("2006-01-02T15:04:05-07:00")
+
 	time.Sleep(2000)
 
 	rec = httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
-	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576}}"
+	expected := "{\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\":{\"Id\":\"a0f39677-afda-f5bb-20b9-c5d8e3e06edf\",\"Name\":\"virtual1\",\"State\":\"running\",\"AllocatedMemory\":1048576,\"InfoUpdatedAt\":\""+expectedTimeString+"\"}}"
 
 	if expected != rec.Body.String() {
 		t.Errorf("Expected response body %s, but got %s", expected, rec.Body.String())
