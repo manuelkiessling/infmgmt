@@ -8,6 +8,10 @@ function formatMemory(memorySize) {
   return "" + Number(( memorySize / 1024 / 1024 ).toFixed(2)) + " GiB";
 }
 
+function formatDateTime(unixTimestamp) {
+  return moment(new Date(unixTimestamp * 1000)).format("YYYY-MM-DD HH:mm:ss");
+}
+
 function OverviewCtrl($scope, VmhostStore) {
   var vmhosts, infoUpdatedAtDate;
 
@@ -22,9 +26,7 @@ function OverviewCtrl($scope, VmhostStore) {
         } else {
           vmhosts[vmhostId].Vmguests[vmguestId].stateColor = "#ddd";
         }
-        infoUpdatedAtDate = new Date(vmhosts[vmhostId].Vmguests[vmguestId].InfoUpdatedAt * 1000)
-        vmhosts[vmhostId].Vmguests[vmguestId].infoUpdatedAt = infoUpdatedAtDate.toString()
-        // TODO: LastUpdateInfo has to be provided by backend
+        vmhosts[vmhostId].Vmguests[vmguestId].infoUpdatedAt = formatDateTime(vmhosts[vmhostId].Vmguests[vmguestId].InfoUpdatedAt);
       }
     }
     $scope.vmhosts = vmhosts;
