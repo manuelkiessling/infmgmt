@@ -3,6 +3,7 @@ basePath = '../';
 files = [
   JASMINE,
   JASMINE_ADAPTER,
+  'htdocs/js/vendor/moment.js',
   'htdocs/js/vendor/angular.js',
   'htdocs/js/vendor/angular-*.js',
   'test/lib/angular/angular-mocks.js',

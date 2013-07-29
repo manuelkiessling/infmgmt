@@ -15,7 +15,8 @@ describe('infmgmt controllers', function() {
             "Id":"abc",
             "Name":"virtual1.example.com",
             "State":"running",
-            "AllocatedMemory": 1024*512
+            "AllocatedMemory": 1024*512,
+            "InfoUpdatedAt": 1375105482
           }
         }
       }
@@ -49,9 +50,11 @@ describe('infmgmt controllers', function() {
               "Name":"virtual1.example.com",
               "State":"running",
               "AllocatedMemory": 1024*512,
+              "InfoUpdatedAt": 1375105482,
               "memoryBlockWidth":50,
               "formattedAllocatedMemory":"0.5 GiB",
-              "stateColor":"#7f7"
+              "stateColor":"#7f7",
+              "infoUpdatedAt":"2013-07-29 15:44:42",
             }
           },
           "formattedTotalMemory":"1 GiB",
