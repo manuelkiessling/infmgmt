@@ -30,11 +30,14 @@ func main() {
 	vmhost, _ := domain.NewVmhost("1", "vmhost1", 32918292, nil)
 	vhr.Store(vmhost)
 	*/
-	vmhost, _ := domain.NewVmhost("1", "kvmhost1.meinauto.local", 32918292, nil)
+	vmhost, _ := domain.NewVmhost("1", "kvmhost1.meinauto.local")
+	vmhost.SetTotalMemory(32918292)
 	vhr.Store(vmhost)
-	vmhost, _ = domain.NewVmhost("2", "kvmhost2.meinauto.local", 32918280, nil)
+	vmhost, _ = domain.NewVmhost("2", "kvmhost2.meinauto.local")
+	vmhost.SetTotalMemory(32918280)
 	vhr.Store(vmhost)
-	vmhost, _ = domain.NewVmhost("3", "kvmhost3.meinauto.local", 24683540, nil)
+	vmhost, _ = domain.NewVmhost("3", "kvmhost3.meinauto.local")
+	vmhost.SetTotalMemory(24683540)
 	vhr.Store(vmhost)
 
 	mi := new(domain.VmhostsInteractor)
@@ -44,6 +47,8 @@ func main() {
 	rh := interfaces.NewRequestHandler(mi)
 
 	r := interfaces.NewRouter(rh)
+
+	mi.UpdateCache()
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)
