@@ -1,0 +1,3 @@
+{"Id":"idnr2", "DnsName":"vmhost1", "MachineType":1, "Vmhost":
+  {"Id":"idnr1", "DnsName":"kvmhost1", "MachineType":0}
+}

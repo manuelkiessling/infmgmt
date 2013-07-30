@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en" ng-app="infmgmt">
+  <head>
+    <meta charset="utf-8">
+    <title>Infrastructure Management</title>
+    <script src="js/vendor/moment.js"></script>
+    <script src="js/vendor/angular.js"></script>
+    <script src="js/vendor/angular-resource.js"></script>
+    <script src="js/app/services.js"></script>
+    <script src="js/app/controllers.js"></script>
+    <script src="js/app/app.js"></script>
+    <link href="css/vendor/bootstrap.css" media="all" rel="stylesheet" type="text/css">
+    <link href="css/vendor/bootstrap-responsive.css" media="all" rel="stylesheet" type="text/css">
+    <link href="css/app/app.css" media="all" rel="stylesheet" type="text/css">
+    <link href="css/app/partials/overview.css" media="all" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#/overview"><strong>infmgmt</strong> - infrastructure management</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="content" ng-view></div>
+
+  </body>
+</html>
