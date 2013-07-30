@@ -17,7 +17,7 @@ function OverviewCtrl($scope, VmhostStore, VmguestinfoFreshnessCalculator) {
   vmhosts = VmhostStore.query({}, function success() {
     for (var vmhostId in vmhosts) {
       vmhosts[vmhostId].formattedTotalMemory = formatMemory(vmhosts[vmhostId].TotalMemory)
-      //console.log(VmguestinfoFreshnessCalculator.findVmguestWithOldestInfo(vmhosts[vmhostId].Vmguests));
+      vmhosts[vmhostId].vmguestWithOldestInfo = VmguestinfoFreshnessCalculator.findVmguestWithOldestInfo(vmhosts[vmhostId].Vmguests);
       for (var vmguestId in vmhosts[vmhostId].Vmguests) {
         vmhosts[vmhostId].Vmguests[vmguestId].memoryBlockWidth = calculatePercentage(vmhosts[vmhostId].TotalMemory, vmhosts[vmhostId].Vmguests[vmguestId].AllocatedMemory);
         vmhosts[vmhostId].Vmguests[vmguestId].formattedAllocatedMemory = formatMemory(vmhosts[vmhostId].Vmguests[vmguestId].AllocatedMemory)

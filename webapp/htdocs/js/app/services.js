@@ -11,4 +11,19 @@ angular.module('infmgmtServices', ['ngResource']).
         isArray: false
       }
     });
+  }).
+  factory('VmguestinfoFreshnessCalculator', function() {
+    return {
+      findVmguestWithOldestInfo: function(vmguests) {
+        var oldestTimestamp = null;
+        var oldestVmguest = null;
+        for (var vmguestId in vmguests) {
+          if (oldestTimestamp == null || vmguests[vmguestId].InfoUpdatedAt < oldestTimestamp) {
+            oldestTimestamp = vmguests[vmguestId].InfoUpdatedAt;
+            oldestVmguest = vmguests[vmguestId];
+          }
+        }
+        return oldestVmguest;
+      },
+    };
   });

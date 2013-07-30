@@ -25,7 +25,7 @@
 .vmguests-memory-bar {
   list-style: none;
   display: block;
-  height: 22px;
+  height: 19px;
   background-color: #fff;
   border: 1px #aaa solid;
   box-shadow: 2px 2px 2px #ddd;
@@ -37,13 +37,24 @@
   font-size: 7px;
   float: left;
   display: inline-block;
-  height: 18px;
+  height: 17px;
   margin: 0;
   padding: 2px;
   border-right: 1px #aaa dotted;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.oldestupdate-info {
+  font-size: 7px;
+  color: #999;
+  text-align: right;
+  margin-top: 2px;
+}
+
+.oldestupdate-info span.oldestupdate-datetime {
+  font-weight: bold;
 }
 
 .vmguest-infobox {

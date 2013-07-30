@@ -58,6 +58,17 @@ describe('infmgmt controllers', function() {
             }
           },
           "formattedTotalMemory":"1 GiB",
+          "vmguestWithOldestInfo": {
+            "Id": "abc",
+            "Name": "virtual1.example.com",
+            "State": "running",
+            "AllocatedMemory": 524288,
+            "InfoUpdatedAt": 1375105482,
+            "memoryBlockWidth": 50,
+            "formattedAllocatedMemory": "0.5 GiB",
+            "stateColor": "#7f7",
+            "infoUpdatedAt": "2013-07-29 15:44:42",
+          },
         }
       };
 

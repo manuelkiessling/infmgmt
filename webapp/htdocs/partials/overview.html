@@ -31,6 +31,13 @@
         Last updated:
         <strong class="last-updated-info">{{vmguest.infoUpdatedAt}}</strong>
       </div>
+      <div class="oldestupdate-info">
+        <span class="oldestupdate-label">
+          The oldest VM guest information of this VM host is from
+        </span>
+        <span class="oldestupdate-datetime">{{vmhost.vmguestWithOldestInfo.infoUpdatedAt}}</span>
+        <span class="oldestupdate-vmguestname">({{vmhost.vmguestWithOldestInfo.Name}})</span>
+      </div>
     </li>
   </ul>
 
