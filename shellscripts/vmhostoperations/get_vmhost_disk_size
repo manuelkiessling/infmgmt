@@ -1,0 +1,10 @@
+#!/bin/bash
+
+VMHOST_DNSNAME=$1
+
+ssh -i ~/.ssh/infmgmt.id_rsa \
+  root@$VMHOST_DNSNAME \
+  df -k /var/lib/libvirt/images \
+  | grep -v "Mounted on" \
+  | sed "s/ \+/ /g" \
+  | cut -d" " -f 2
