@@ -5,9 +5,9 @@ import (
 	_ "fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
-	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
-	"github.com/manuelkiessling/infmgmt-backend/interfaces"
+	"github.com/manuelkiessling/infmgmt/backend/domain"
+	"github.com/manuelkiessling/infmgmt/backend/infrastructure"
+	"github.com/manuelkiessling/infmgmt/backend/interfaces"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +23,7 @@ func setupRouter() *mux.Router {
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-integrationtestdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt/backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 
 	vglr := interfaces.NewVmguestLiveRepository(ce)

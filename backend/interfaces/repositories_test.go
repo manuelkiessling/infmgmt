@@ -3,8 +3,8 @@ package interfaces
 import (
 	"database/sql"
 	"github.com/coopernurse/gorp"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
-	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
+	"github.com/manuelkiessling/infmgmt/backend/domain"
+	"github.com/manuelkiessling/infmgmt/backend/infrastructure"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 	"os"
@@ -21,7 +21,7 @@ func setupVmguestLiveRepo() VmguestRepository {
 func setupVmguestCacheRepo() VmguestRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt/backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 	repo := NewVmguestCacheRepository(dbMap)
 	dbMap.DropTables()
@@ -32,7 +32,7 @@ func setupVmguestCacheRepo() VmguestRepository {
 func setupVmhostRepo() *VmhostRepository {
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-testdb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt/backend:", log.Lmicroseconds))
 	dbMap.TraceOff()
 	repo := NewVmhostRepository(dbMap, setupVmguestLiveRepo(), setupVmguestCacheRepo())
 	return repo

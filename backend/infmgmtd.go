@@ -3,9 +3,9 @@ package main
 import (
 	"database/sql"
 	"github.com/coopernurse/gorp"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
-	"github.com/manuelkiessling/infmgmt-backend/infrastructure"
-	"github.com/manuelkiessling/infmgmt-backend/interfaces"
+	"github.com/manuelkiessling/infmgmt/backend/domain"
+	"github.com/manuelkiessling/infmgmt/backend/infrastructure"
+	"github.com/manuelkiessling/infmgmt/backend/interfaces"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +17,7 @@ func main() {
 
 	db, _ := sql.Open("sqlite3", "/tmp/infmgmt-productiondb.sqlite")
 	dbMap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt-backend:", log.Lmicroseconds))
+	dbMap.TraceOn("[gorp]", log.New(os.Stdout, "infmgmt/backend:", log.Lmicroseconds))
 
 	vglr := interfaces.NewVmguestLiveRepository(ce)
 	vgcr := interfaces.NewVmguestCacheRepository(dbMap)

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/coopernurse/gorp"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt/backend/domain"
 	_ "github.com/mattn/go-sqlite3"
 	"strconv"
 	"strings"

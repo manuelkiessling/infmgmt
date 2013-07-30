@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/manuelkiessling/infmgmt-backend/domain"
+	"github.com/manuelkiessling/infmgmt/backend/domain"
 	"net/http"
 )
 
