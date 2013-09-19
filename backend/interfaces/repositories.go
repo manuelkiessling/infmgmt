@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var cacheUpdateRunning = false
+var cacheUpdateIsRunning = false
 
 type VmguestRepository interface {
 	Store(vmhostDnsName string, vmguest *domain.Vmguest) error
@@ -209,33 +209,29 @@ func (repo *VmhostRepository) GetAll() (map[string]*domain.Vmhost, error) {
 }
 
 func (repo *VmhostRepository) UpdateCache() error {
-	if cacheUpdateRunning {
-		return fmt.Errorf("A cache update is already running, try again later")
+	if cacheUpdateIsRunning == true {
+		return fmt.Errorf("Another cache update is already running.")
 	}
-
+	cacheUpdateIsRunning = true
 	vmhosts, err := repo.GetAll()
 	if err != nil {
-		fmt.Errorf("Error getting vmhosts for UpdateCache")
+		return fmt.Errorf("Error getting vmhosts for UpdateCache")
 	}
 
-	cacheUpdateRunning = true
-
-	go func() {
-		for _, vmhost := range vmhosts {
-			vmguests, err := repo.vmguestLiveRepository.GetAll(vmhost.DnsName())
+	for _, vmhost := range vmhosts {
+		vmguests, err := repo.vmguestLiveRepository.GetAll(vmhost.DnsName())
+		if err != nil {
+			return fmt.Errorf("Error getting vmguests for UpdateCache")
+		}
+		for _, vmguest := range vmguests {
+			err = repo.vmguestCacheRepository.Store(vmhost.DnsName(), vmguest)
 			if err != nil {
-				fmt.Errorf("Error getting vmguests for UpdateCache")
-			}
-			for _, vmguest := range vmguests {
-				err = repo.vmguestCacheRepository.Store(vmhost.DnsName(), vmguest)
-				if err != nil {
-					fmt.Printf("Error while storing in vmguest cache: %+v", err)
-				}
+				return fmt.Errorf("Error while storing in vmguest cache: %+v", err)
 			}
 		}
-		cacheUpdateRunning = false
-	}()
+	}
 
+	cacheUpdateIsRunning = false
 	return nil
 }
 

@@ -2,6 +2,7 @@ package infrastructure
 
 import (
 	"strings"
+	"time"
 )
 
 type MockCommandExecutor struct {
@@ -10,6 +11,7 @@ type MockCommandExecutor struct {
 
 func (ce *MockCommandExecutor) Run(command string, arguments ...string) (output string, err error) {
 	commandline := command + " " + strings.Join(arguments, " ")
+  time.Sleep(100 * time.Millisecond)
 	if commandline == "/usr/share/infmgmt/shellscripts/vmhostoperations/get_number_of_vmguests vmhost1" {
 		return "1", nil
 	}

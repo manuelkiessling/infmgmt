@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"testing"
 	"time"
+	"fmt"
 )
 
 func setupVmguestLiveRepo() VmguestRepository {
@@ -172,13 +173,12 @@ func TestVmhostRepositoryUpdateCacheIsLocked(t *testing.T) {
 	vmhost.SetTotalMemory(32918292)
 	repo.Store(vmhost)
 
+	go func() {
+		repo.UpdateCache()
+	}()
+	fmt.Printf("started UpdateCache in goroutine")
 	err := repo.UpdateCache()
-	if err != nil {
-		t.Errorf("Could not run update cache although no other update cache process is running")
-	}
-	err = repo.UpdateCache()
 	if err == nil {
-		t.Errorf("Expected update cache to fail because another process is still running")
+		t.Errorf("Expected repo.UpdateCache() to fail because another process is running")
 	}
-
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	_ "fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/manuelkiessling/infmgmt/backend/domain"
 	"github.com/manuelkiessling/infmgmt/backend/infrastructure"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -26,10 +28,6 @@ func main() {
 	dbMap.DropTables()
 	dbMap.CreateTables()
 
-	/*
-	vmhost, _ := domain.NewVmhost("1", "vmhost1", 32918292, nil)
-	vhr.Store(vmhost)
-	*/
 	vmhost, _ := domain.NewVmhost("1", "kvmhost1.meinauto.local")
 	vmhost.SetTotalMemory(32918292)
 	vhr.Store(vmhost)
@@ -48,7 +46,12 @@ func main() {
 
 	r := interfaces.NewRouter(rh)
 
-	mi.UpdateCache()
+	go func() {
+		for true {
+			mi.UpdateCache()
+			time.Sleep(1 * time.Minute)
+		}
+	}()
 
 	http.Handle("/", r)
 	http.ListenAndServe(":8080", nil)

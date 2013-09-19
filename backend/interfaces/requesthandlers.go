@@ -131,6 +131,7 @@ func (rh *RequestHandler) HandleCreateVmguestRequest(res http.ResponseWriter, re
 }
 
 func (rh *RequestHandler) HandleUpdateCache(res http.ResponseWriter, req *http.Request) {
+	// start in goroutine and inject channel to get status?
 	err := rh.vmhostsInteractor.UpdateCache()
 	if err == nil {
 		fmt.Fprintf(res, "OK")
